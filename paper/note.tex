@@ -21,14 +21,15 @@ Adjamagbo's separable Jacobian conjecture is now known to fail in
 characteristic~$2$: in dimension three by Huq-Kuruvilla (July 23, 2026)
 and in dimension two by Mondello (July 29, 2026). We report two
 findings about the \emph{landscape} of such counterexamples. First, a
-parity obstruction in normal form: in exhaustively classified strata of
-identity-plus-homogeneous maps over $\F_2$ --- all $262{,}144$ maps with
-quadratic higher part in dimension $3$, all $16{,}384$ plane maps of
-degree $\le 3$, and (nearly complete) all $10{,}144$ unit-Jacobian maps
-of the $16.7$-million-map cubic-homogeneous stratum --- every map with
-$\det JF = 1$ has generic degree $1$ or even, so no counterexample of
-odd degree exists in these strata, although general maps (the known
-counterexamples included) violate the pattern. If this parity law holds
+parity obstruction in normal form: in two exhaustively classified
+strata of identity-plus-homogeneous maps over $\F_2$ --- all $262{,}144$
+maps with quadratic higher part in dimension $3$ and all $16{,}384$
+plane maps of degree $\le 3$ --- every map with $\det JF = 1$ has
+generic degree $1$ or even, so no counterexample of odd degree exists
+there; a third, $16.7$-million-map cubic-homogeneous stratum agrees on
+all $9{,}813$ of its $10{,}144$ unit-Jacobian maps classified so far.
+General maps --- the known counterexamples included --- violate the
+pattern. If this parity law holds
 for identity-plus-$H$ form in general, no characteristic-$2$ analogue of
 the Bass--Connell--Wright reduction can preserve counterexamples.
 Second, a search method: compiling $\det JF = 1$ over unknown $\F_2$
@@ -37,8 +38,10 @@ enumerating all solutions with a SAT solver. Transferring the monomial
 supports of the Alp\"oge--Fable characteristic-$0$ counterexample mod
 $2$ proved decisive: the support-mirrored $2^{58}$-map family produced a
 new degree-$3$ counterexample within $3{,}000$ enumerated unit-Jacobian
-maps, while a generic low-degree $z$-linear family of $2^{45}$ maps
-produced over two million unit-Jacobian maps and no counterexample. The
+maps ($8{,}277$ candidates with the tame census signature among
+$6.7$ million members enumerated), while a generic low-degree
+$z$-linear family of $2^{45}$ maps produced $9.8$ million unit-Jacobian
+maps and not a single one. The
 resulting map --- target-shear-equivalent to
 $(z + xy(1{+}y{+}xy)(1{+}xz),\, y(1{+}xy),\, x(1{+}xz))$ --- agrees with
 Huq-Kuruvilla's on every invariant we computed yet is provably not
@@ -71,11 +74,19 @@ computationally with the tooling of this paper (unit determinant,
 generic degree $3$, and the stated collisions).
 
 This note contributes to the emerging landscape rather than to the
-existence question: a parity obstruction suggesting \emph{where
-counterexamples cannot live} (Section~2), a SAT-based search method
-with a sharp positive/negative contrast showing \emph{how to find them}
-(Section~3), a new example with unusual properties relative to
-Huq-Kuruvilla's (Sections~4--5), and verification artifacts.
+existence question. The organizing observation: \emph{all three known
+characteristic-$2$ counterexamples --- Huq-Kuruvilla's, Mondello's, and
+the one found here --- have odd generic degree $3$ and live outside
+identity-plus-$H$ normal form, while in every normal-form stratum we
+have exhaustively classified, odd degree $\ge 3$ never occurs}; and the
+two three-variable maps, though provably not related by low-complexity
+automorphisms, have fiber-drop loci with identical fine structure.
+Three independent witnesses thus separate the parity question from
+being a pattern in one dataset. We present: the parity obstruction and
+the strata classifications (Section~2), a SAT-based search method with
+a sharp positive/negative contrast (Section~3), the new example and its
+verification (Section~4), and the equivalence-resistance analysis
+(Section~5).
 
 \section{The parity obstruction}
 
@@ -105,8 +116,9 @@ quadratic-only stratum, characteristic $2$ kills every square's
 derivative, so $\det JF = 1 + b y + e x$ where $b, e$ are the
 $xy$-coefficients: a unit iff both vanish, leaving exactly the
 Frobenius-affine maps $v \mapsto v + M v^{(2)}$ --- additive group
-homomorphisms whose generic degree is their kernel size, a power of
-$2$. In the three-dimensional quadratic stratum the determinant
+homomorphisms whose derivative is the identity, hence \'etale with
+finite kernel and dominant (so the generic degree is defined), of
+generic degree equal to the kernel size, a power of $2$. In the three-dimensional quadratic stratum the determinant
 conditions solve completely: the $4096$ maps are exactly
 $F = \mathrm{id} + \bigl(d(y{+}ex)(z{+}fx),\; e(x{+}dy)(z{+}fy),\;
 f(x{+}dz)(y{+}ez)\bigr) + (\text{Frobenius part})$ for
@@ -165,11 +177,13 @@ neighborhoods), and let SAT enumerate. The contrast is sharp:
 \begin{itemize}
 \item Support-mirrored $z$-linear family ($2^{58}$ maps): the
 counterexample of Section~4 appeared within the first $3{,}000$
-enumerated unit-Jacobian maps ($6$ census-tame maps in the first
-$26{,}000$, all variants of one base map).
+enumerated unit-Jacobian maps; by the end of the run, $8{,}277$ of
+$6.7$ million enumerated members carried the tame census signature
+(their exact classification is ongoing; the first six were all variants
+of the single base map of Section~4).
 \item Generic low-degree $z$-linear family ($2^{45}$ maps,
-$P,R,T$ of degree $\le 2$, $Q,S,U$ of degree $\le 3$): over
-$2.1$ million unit-Jacobian maps enumerated, \emph{zero} passed the
+$P,R,T$ of degree $\le 2$, $Q,S,U$ of degree $\le 3$):
+$9.8$ million unit-Jacobian maps enumerated, \emph{zero} passed the
 census sieve.
 \end{itemize}
 
@@ -258,8 +272,10 @@ author's authority.
 
 \begin{thebibliography}{9}
 
-\bibitem{alpoge} L.~Alp\"oge, announcement of a counterexample to the
-Jacobian conjecture, July 19--20, 2026.
+\bibitem{alpoge} L.~Alp\"oge, \emph{A counterexample to the Jacobian
+conjecture}, manuscript, 2026,
+\url{https://www.ulam.ai/research/jacobian.pdf} (announced July 19--20,
+2026).
 
 \bibitem{hk} I.~Huq-Kuruvilla, \emph{An explicit characteristic-$2$
 counterexample to the separable Jacobian conjecture},
@@ -273,10 +289,8 @@ arXiv:2608.02634, July 29, 2026.
 conjecture}, Secret Blogging Seminar, July 20, 2026,
 \url{https://sbseminar.wordpress.com/2026/07/20/the-new-counterexample-to-the-jacobian-conjecture/}.
 
-\bibitem{dims} H.~Gao, \emph{Counterexamples to the Jacobian conjecture
+\bibitem{dims} S.~Gao, \emph{Counterexamples to the Jacobian conjecture
 in dimensions greater than two}, arXiv:2608.00222, August 2026.
-% TODO(author): verify the author's given name/initial against the
-% arXiv listing before submission.
 
 \bibitem{tao} T.~Tao, \emph{A digestion of the Jacobian conjecture
 counterexample}, July 21, 2026,
