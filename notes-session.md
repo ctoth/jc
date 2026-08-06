@@ -142,6 +142,14 @@
 - Background: cubic classification still going (~4k+/10144 all even); hunt A ~900k+/0 tame; hunt C collecting.
 - Pending user decisions: authorship line, Gao initial (my 'H.' is a GUESS — flagged TODO), SBS comment.
 
+## Equivalence search results (exact, complete at their depths)
+- Level 0: NOT affinely equivalent (all 1344² pairs via meet-in-middle: hash {β∘N}, probe {H∘α}).
+- Level 1: NOT equivalent w/ one shear per side (29,568 rhs states, 0 hits).
+- Level 2: NOT equivalent by words of length ≤ 2 per side over G = 1344 affines + 27 monomial shears (deg ≤ 3). rhs 53,529 distinct states (from 1.9M words — massive collapse), 1.9M probes, 0 possible hits (64-bit digest matching, verify-on-hit protocol, none to verify).
+- Combined picture: ALL invariants agree (censuses F₄–F₃₂; geometric fiber stratification F₂–F₈ incl. shared q²-point drop locus = (q−1) empty + rest singleton) YET no low-complexity equivalence. Note updated with exact quantified statement. Depth 3 naive = 2.6e9/side — infeasible; smarter targeted methods (stabilizer chains, invariant-guided) possible later.
+- Note's equivalence paragraph now the honest both-ways statement the user asked for. Ready for their 1-week window decision.
+- Background: hunt A 1M+ models 0 tame (monitor re-armed bmt2sl0nx); cubic classification ongoing; hunt C collecting.
+
 ## State / next
 - Just addressed user's 3 review points (exact membership; is_generic instead of assume(n!=1); Groebner certificate).
 - BLOCKER (trivial): test_conjecture.py line 62 uses fiber_certificate without importing it — fix import, then run full suite.
