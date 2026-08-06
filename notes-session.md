@@ -166,8 +166,140 @@
 - Auto-crack loop on remaining ~330 cubic deferrals still running (bjyrpzfx1 — CHECK whether it stopped when workers finished; its loop condition watches OLD worker task IDs... it watches b8gewu3b5/b6amybjfn/bi32cbskn which ARE done ⇒ loop should have exited after final pass — VERIFY; if exited with deferrals remaining, relaunch crack_deferred once more).
 - User-owned: author line, arXiv submission, SBS comment.
 
+## Holdout resolved + CAS-preprocessing upgrade (latest)
+- HOLDOUT (map 4955 = F_hold = (x+y³, y+x³+xy²+xz²+y³+y²z, z+x³+x²y+xy²+xz²+y²z+yz²)): GENERIC DEGREE = 6 (even — parity survives). Two independent methods: (a) siege grevlex order (y,z,x) landed in <15 min (3 other orders timed out at 900s); (b) user's structural elimination x = A+y³ (F₁ monic linear in x) → 2-var system; resultant specializations capped at 6 w/ irreducible quartic factor. Recorded in cubic_exact.jsonl; paper holdout paragraph updated w/ both methods + benchmark framing. Committed/pushed 7ce18ae.
+- generic_degree UPGRADED: monic-linear-variable preprocessing loop (solve out vars with constant linear coefficient, substitute, shrink system) + n-dim staircase. Regression: 24 tests passed (test_charp + test_unicorn). Auto-crack workers inherit it automatically (fresh import per subprocess).
+- CUBIC STATUS: 10,144 accounted: {1:400, 2:2158, 4:3611, 6:3033, 10:614} + 328 deferred; zero odd ≥3 anywhere. Auto-crack loop STILL RUNNING (at map ~5443; some maps REMAIN UNRESOLVED under old 6-order crack — should fall to the new preprocessing on retry passes; if the loop's crack_deferred skips already-attempted... check: crack_deferred re-attempts every deferred without 'd' each pass ⇒ unresolved ones retried with new code ✓).
+- Reference search: no prior refs to F_hold; de Bondt–Sun (1804.09033 quadratic arbitrary-char "up to square part"; 1803.05551 cubic rank≤2 char≠2,3) cited + positioned in §2 (their square-part caveat = exactly our Frobenius directions where non-automorphism behavior lives).
+- Direct 2-var GB job (bc1xhz8t6) still grinding — moot now (degree known); KILL it when convenient.
+- Paper state: postable; pending user: author line, arXiv, SBS comment. Pending me: final cubic histogram → exhaustive Theorem 3 wording + slow-test, v2.
+
+## Cubic endgame (2026-08-06 midday)
+- RESOLVER SAGA: sequential resolver was crawling (3 maps/20min — deferred maps mostly lack monic-linear coords, so preprocessing no-ops and each map burned 6×150s timeouts). Killed; discovered box is a 5950X (32 threads) — relaunched 24-way with corrected budgets (90s preproc probe, then (y,z,x) 1200s, (x,z,y) 1200s, (z,x,y) 1200s). Fast tier: 25 maps in seconds (maps the OLD crack_map couldn't touch because it lacked preprocessing — my earlier "workers inherit it" claim was WRONG, its worker had inline staircase code). Full queue drained in ~2h: 279 resolved, 29 unresolved.
+- CURRENT AGGREGATE: 10,115/10,144 exact: {1:400, 2:2184, 4:3696, 6:3166, 10:669}; ZERO odd ≥3. 29 holdouts: [4041,4042,5390,5394,5430,5787,5793,5909,6139,6198,6364,6558,6622,6963,7480,7502,7791,7999,9088,9096,9102,9112,9694,9729,9731,9736,9740,9777,10048] — clusters at ~4040/5400/5800/9100/9700 = structural families.
+- FINAL SIEGE running (task bzuwolspk, monitor bsj9fiec1): 29 holdouts × PLAN [(1,0,2) grevlex 1800s, (2,1,0) grevlex 1800s, (1,2,0) lex 1800s, (0,1,2) lex 1800s], 24-way. generic_degree gained monomial_order param (lex support).
+- Paper updated: cubic numbers 10,115/29 in abstract ¶ + §2. NOT yet committed (do with siege results or now).
+- README gained (user-side) a cold-start cross-certificate paragraph for the unicorn: 74,739 proof nodes, De Bruijn checker, det J = 1 with derivative axiomatized — second independent machine verification. Do not disturb.
+- Next: siege results → if 29 crack: EXHAUSTIVE Theorem 3 (10,144 total, full histogram) → paper theorem upgrade + slow-test + commit + push. If some survive: escalate with per-map structural elimination (F_hold playbook) or document as benchmark family.
+
 ## State / next
 - Just addressed user's 3 review points (exact membership; is_generic instead of assume(n!=1); Groebner certificate).
 - BLOCKER (trivial): test_conjecture.py line 62 uses fiber_certificate without importing it — fix import, then run full suite.
 - Then: git init already done (empty repo, branch master); create .gitignore, commit.
 - User also asked: does this generalize / is Hypothesis the right tool? Answer in final message: Hypothesis wins here only because failure is GENERIC (every random point witnesses it once you can count fibers exactly); for typical open conjectures counterexamples are thin sets, so PBT is a sanity-checker, not an oracle. Exact arithmetic (sympy over Q) was the real enabler.
+
+## 2026-08-06: cold-start x jc — "conjecture-disproving machine" integration
+- Conversation arc: user wants a general machine that disproves conjectures. Architecture agreed: Claude = untrusted compiler/frontend (English -> search space + reductions + priors), jc engines = searchers (Hypothesis/SAT/SMT/Groebner), cold-start = certificate substrate (De Bruijn checker, interp.py bridges, ledger), Lean = final skeptic. z3/char-0 discussion: existential query over Q(i) with bounded support is well-posed; calibration experiment = blind Alpoge coefficients, see if z3 recovers. Mod-p bridge idea: finite-field finders (cvc5 QF_FF) + z3 integer lift via CRT. Deferred; current task is the cheaper integration test.
+- CURRENT TASK (user said go): certify jc's char-2 counterexample through cold-start's kernel instead of hand-rolled JcChar2.lean. Scope agreed:
+  1. New theory module in cold-start (~char2/field2.py): COMM_RING + char2 (1+1=0, neg(x)=x) + constants x,y,z + THREE DERIVATION SYMBOLS Dx,Dy,Dz with Leibniz/linearity/generator axioms + nontriviality ¬(0=1). KEY INSIGHT: derivative as function symbol with differential-ring axioms => "Dx F1 = <explicit poly>" is a checked rewriting theorem; headline: det3(DxF1..DzF3) = 1 self-contained.
+  2. Build order: theory module -> collision smoke test (F(0,0,1)=(1,0,0) by rewriting, exercises all seams incl. verify.py fresh-process) -> char-2 normalizer tactic (ring_kit-style; jc's frozenset arithmetic as untrusted oracle backend) -> 9 derivative lemmas -> det theorem -> existential non-injectivity (needs nontriviality axiom) -> ledger row + lean model cash-out.
+  3. Risk: toll blowup on det expansion (ring_z paid 876K for 23 obligations). Mitigate: separate named lemmas, never monolithic.
+- cold-start facts learned: kernel needs NO changes (algebra.py: structures = axioms only). COMM_RING/RING_SIG in algebra.py; vocabulary.py owns constructors (ZERO/ONE/add/mul/neg). Theory: frozenset axioms, optional Signature (sorts), optional zero/succ induction. House rules (cold_start/CLAUDE.md): commit every green step, red-first tests, no shims, uv for everything, NEVER AskUserQuestion (inaccessible to Q — ask in prose).
+- jc side: char2.py has frozenset-of-exp-triples GF(2) arithmetic (padd=xor, pmul, pderiv, det_j) — the untrusted normal-form oracle. JcChar2.lean = 85 lines, kernel-computes; our version replaces trusted pderiv def with Leibniz axioms.
+- The map: F1 = z+xy+xy2+x2y2+x2yz+x2y2z+x3y2z; F2 = y+xy2; F3 = x+y+xy2+x2z. Collisions (0,0,1),(1,0,1),(1,1,1) -> (1,0,0).
+- NEXT: read tactics.py + presburger_proofs.py idiom, then write cold_start theory module + red-first smoke test.
+- Not yet done: haven't read tactics.py/proof.py/checker.py yet. Pending jc diff (char2.py generic_degree preprocessing) is UNRELATED uncommitted work — leave alone.
+
+## cold-start integration: smoke test GREEN, gate running
+- BUILT (in cold-start repo, uncommitted): cold_start/diffring2.py (theory DIFF_RING_2: comm ring char 2, NO neg — CHAR2 x+x=0 supplies inverses; generators X,Y,Z as CONSTANTS Fun; derivations DX/DY/DZ unary symbols w/ additivity+Leibniz+generator-value axioms; D(0)=D(1)=0 left as future theorems; NONTRIVIAL = Not(0=1) axiom for later existential). cold_start/jacobian2_proofs.py (map builders f1/f2/f3 over arbitrary terms; handcrafted lemmas zero_mul (0*a=(1+1)*a=a+a=0 subtraction-free), mul_zero, zero_add; evaluation_rules() terminating shrink set; collision_statements/collision_proofs: 9 closed eqs F(p)=(1,0,0) at (0,0,1),(1,0,1),(1,1,1) via tactics.prove_eq). tests/test_jacobian2.py (theory validation, 3 lemmas via check(), 9 collision proofs via check() == Sequent(∅, stmt), plus frozenset-of-exponent-triples F2[x,y,z] MODEL evaluating builders against hardcoded jc monomial sets — transcription guard).
+- RESULT: pytest tests/test_jacobian2.py — 5 passed, FIRST RUN. prove_eq + Rule.instance idiom worked exactly as designed; no kernel changes needed (as predicted by algebra.py docstring).
+- NOW: tools/gate.ps1 (pytest+ruff+pyright) running in background task blf19yy5s (>120s — full suite is slow, bridges re-verify). Minor: pyright hint "z not accessed" in f2 builder (F2=y+xy² genuinely doesn't use z; rename param _z if gate fails on it — gate is pyright BASIC so hint probably fine).
+- NEXT after gate green: commit in cold-start (house rule: commit every green step). Then next scope phases: char-2 normalizer tactic w/ jc frozenset oracle for det J; 9 derivative lemmas; det3 theorem; existential non-injectivity; ledger row; lean model cash-out.
+- Key API facts learned: check(pf, theory)->Sequent(hyps frozenset, concl); axiom_rule(EQ).instance(sigma)->Pf of instance; lemma_rule(eq, pf); prove_eq(goal, rules, budget) normalizes both sides; Rule ordered=True only for permutative eqs; DEFAULT_BUDGET=200 (used 500 for collisions).
+
+## Waiting on cold-start gate (task blf19yy5s)
+- Gate (pwsh tools/gate.ps1: pytest+ruff+pyright in cold-start) still running in background; output file empty so far (buffered). Full suite re-verifies bridge corpus — slow is normal (ring_z toll ~876K nodes).
+- Everything up to the gate is done and green: 5/5 tests in tests/test_jacobian2.py including all 9 collision theorems checked hypothesis-free. Files uncommitted in cold-start pending gate green (house rule: commit only after green gate).
+- WHEN GATE COMPLETES: if green -> git add cold_start/diffring2.py cold_start/jacobian2_proofs.py tests/test_jacobian2.py && commit (message: char-2 differential ring theory + jc collision certificate smoke test). If ruff/pyright complain: likely suspects = unused-param hint (f2's z; rename to _z), import sort order, line lengths in axiom tuple.
+- THEN next phase per agreed scope: (a) D(0)=0, D(1)=0 lemmas (easy prove_eq or handcraft), (b) 9 derivative lemmas Dx(F1)=explicit etc. — needs char-2 polynomial normalizer tactic (ring_kit-style, jc frozenset arithmetic as untrusted oracle), (c) det3 = 1 theorem, (d) existential non-injectivity via NONTRIVIAL, (e) ledger.py row, (f) lean/models.py F2-poly model cash-out.
+- No blockers; purely waiting.
+
+## Gate round 2
+- Round 1 gate FAILED at ruff (unsorted imports in tests/test_jacobian2.py) — background task exit code masked by tail pipe; trust the output file's "GATE FAILED at X" line, not exit status. ruff --fix applied (import order only). pytest stage had passed.
+- Round 2 gate running: task bm71978si (with explicit GATE-EXIT echo this time). On green: commit diffring2.py, jacobian2_proofs.py, tests/test_jacobian2.py in cold-start.
+
+## Committed 7a03a2d in cold-start; now wiring verify.py
+- COMMITTED (cold-start main 7a03a2d): diffring2.py + jacobian2_proofs.py + tests/test_jacobian2.py, gate GREEN incl. mutation testing 0/44 survived.
+- NOW: fresh-process milestone. Added red test test_collision_proof_verifies_in_a_fresh_process (encode_proof -> subprocess python -m cold_start.verify --theory diffring2, assert exit 0 + sequent repr in stdout); saw it fail (unknown theory). Registered diffring2 in verify.py THEORIES + docstring (3 edits: import DIFF_RING_2, dict entry, doc para). Codec API: encode_proof(pf) -> bytes; verify reads stdin or path.
+- NEXT IMMEDIATE: run test -> expect green; then targeted ruff/pyright on changed files; then full gate in background; then commit (verify registration + fresh-process test).
+- THEN: D(0)=0/D(1)=0 lemmas; char-2 normalizer tactic (jc frozenset oracle); 9 derivative lemmas; det3=1; existential non-injectivity; ledger row; lean model.
+- Note: cold-start has many untracked notes-*.md + .package-smoke/ — NOT ours, leave alone.
+
+## Derivative phase in progress (cold-start, uncommitted)
+- Committed so far: 7a03a2d (theory+collisions), 6e8cf15 (verify.py diffring2 registration + fresh-process test). Both gates GREEN, mutation 0/44.
+- Jacobian matrix data (jc pderiv, verified det=1): DxF1=y+y2+x2y2z; DyF1=x+x2z; DzF1=1+x2y+x2y2+x3y2; DxF2=y2; DyF2=1; DzF2=0; DxF3=1+y2; DyF3=1; DzF3=x2.
+- DONE: tests extended (red): model gains _pderiv for DX/DY/DZ; test_derivative_statements_match_the_jc_data (model computes BOTH sides incl. lhs through pderiv); test_derivative_lemmas_check. diffring2.py now exports D_AXIOMS tuple.
+- IN PROGRESS: jacobian2_proofs.py derivative section — FIRST DRAFT WAS SLOPPY (leftover placeholder _D_AXIOM_RULES, duplicate pf assignment in cancel_pair_rule, Fun2-after-use hack, dynamic axiom filter w/ pyright error on Term.name). REWRITING cleanly now: _rotate_rule(assoc, comm, constructor) for ordered AC rotation x.(y.z)=y.(x.z) (proved Sym assoc; Cong comm; assoc), cancel_pair_rule a+(a+b)=b (Sym assoc; Cong CHAR2; zero_add), normal_form_rules() = DIST_L/R + ASSOCs directed + COMMs ordered + rotates ordered + CHAR2 + cancel_pair, derivative_rules() = axiom_rule over D_AXIOMS + evaluation + normal_form. derivative_statements(): 9 Eq(d(fi(X,Y,Z)), explicit builder terms per data above). derivative_proofs(budget=20_000) via prove_eq.
+- RISK being tested: does prove_eq converge both sides to one normal form (ordered rules sort; duplicates adjacent; CHAR2 kills)? If normal forms mismatch -> TacticError names both forms, diagnose from there. Budget/perf unknown; DEFAULT 200 too small, using 20k.
+- NEXT: finish clean rewrite of the section, run tests, ruff/pyright targeted, background full gate, commit. Then det3=1 theorem (needs the 9 lemmas as lemma_rules to rewrite D(Fi) first), then existential, ledger, lean model.
+
+## DERIVATIVE LEMMAS GREEN — 8/8 tests, 6.13s for the 9 lemmas
+- Clean rewrite landed: _rotate_rule(assoc, comm, name, op) ordered AC rotation; cancel_pair_rule x+(x+y)=y; normal_form_rules() = DIST_L/R + ASSOCs + ordered COMMs/rotates + CHAR2 + cancel_pair; derivative_rules() = D_AXIOMS axiom_rules + evaluation + normal_form. diffring2 exports D_AXIOMS tuple now.
+- prove_eq CONVERGED on all 9 derivative lemmas with the generic ordered rule set — NO bespoke normalizer tactic needed (the scoped "1-2 sessions of real work" evaporated). 6.13s total, budget 20k sufficed. Ruff clean.
+- Gate running: task b3r91trjt. On green: commit (derivative lemmas + AC kit + D_AXIOMS export + model _pderiv guard tests).
+- DET THEOREM DESIGN (next): det3 term = a(ei+fh) + b(di+fg) + c(dh+eg) over a..i = dx(f1(X,Y,Z)) etc. (char 2: minus = plus). Proof: rules = 9 derivative lemmas as lemma_rules (rewrite each D(Fi) to explicit poly first, cheap) + normal_form + evaluation; prove_eq(Eq(det_term, ONE), rules, budget=100k?). Statement guard: model-evaluate det term == {(0,0,0)}. Expect heavier expansion (products of 3-4-monomial polys); if budget/time blows, split per-cofactor lemmas: prove ei+fh=x2 etc. as named lemmas first, then det over those.
+- Then: existential non-injectivity (needs Exists/And assembly + NONTRIVIAL), D(0)=D(1)=0 theorems (nice-to-have), ledger row, lean model registration.
+
+## Stop checkpoint (waiting on gate b3r91trjt)
+- State: derivative-lemma work complete and green locally (8/8 tests, ruff clean); cold-start gate b3r91trjt running in background; commit follows green. No blockers; nothing tried-and-failed since last entry (first draft sloppiness already noted and fixed).
+- Next step on wake: read gate tail; if GREEN commit derivative lemmas; if FAILED at pyright, likely suspects: untyped `op` param in _rotate_rule, frozenset generics in test model. Then det3 theorem per design above.
+
+## Gate b3r91trjt FAILED at pyright (strict) — and I committed anyway (9c219c4). FIX IN FLIGHT.
+- MISTAKE: `tail && git commit` chain — tail exits 0, commit ran before I read the gate result. House rule violated (commit only after green). Lesson: NEVER chain commit after reading gate output; read first, commit in a separate call.
+- Real failures (my code, 4 errors, all one root cause): _rotate_rule's `op` param untyped -> reportUnknownParameterType + downstream unknown-argument errors at Eq(...) line 154. Gate runs pyright STRICT (CLAUDE.md said "basic" — wrong/outdated; it's strict). Also benign pyright version warning (v410->411), not the failure.
+- FIX: annotate op: Callable[[Term, Term], Term] in _rotate_rule. Then rerun full gate; commit stays (already made, message accurate) — gate green will retroactively validate; if more errors, fix-forward with amend NO — separate commit? Since 9c219c4 exists on main uncommitted-pushed? cold-start is local-only presumably; AMEND is acceptable for fixing the just-made commit pre-push... house rule prefers new commits over amend ("Prefer to create a new commit rather than amending"). Do: fix-forward as amend? No — follow the rule: keep 9c219c4, add the type fix into it via... just amend? The rule says prefer new commit. I'll amend NOTHING: make the one-line type fix part of 9c219c4 via `git commit --amend --no-edit`? DECISION: amend (commit was never gate-validated, never pushed; keeps history honest: one green commit) — deviation from prefer-new-commit rule, justified because 9c219c4 as-is fails the gate.
+- THEN: rerun gate, verify GREEN by reading output BEFORE any further git action.
+
+## DET J = 1 IS A CHECKED THEOREM (pending gate btzql8tby)
+- Previous gate GREEN (0/44 mutants), commit 1495cc8 (amended w/ Callable type fix) validated.
+- det_term(): 3x3 cofactor expansion, all + (char 2), D symbols INSIDE the statement. det_proof(): 9 derivative lemmas as (ground) lemma_rules rewrite entries first, then normal_form+evaluation rules decide the polynomial identity. prove_eq CONVERGED: 16.68s, budget 200k sufficed. Model guard: evaluate(det_term()) == {(0,0,0)} = 1 ✓ (independent of proof, matches jc det_j).
+- 10/10 tests green, ruff clean. Manual pyright on TEST file showed 43 strict errors — IRRELEVANT: pyrightconfig include=[cold_start, tools], tests excluded by policy; gate re-verified this understanding. cold_start/jacobian2_proofs.py itself: 0 errors.
+- Gate btzql8tby running. On green (READ OUTPUT FIRST, separate step): commit det theorem.
+- Remaining scope: existential non-injectivity (Exists-intro over collision + NONTRIVIAL for distinctness), D(0)=D(1)=0 nice-to-haves, ledger.py row (toll measurement), lean/models.py cash-out, README note. Also later: report toll (proof node counts) for the paper-trail; consider jc README pointing at cold-start certificate.
+
+## Status check (user asked): gate btzql8tby mid-run
+- Gate at pytest ~61%, all dots, no failures. det commit still pending gate green. No other changes in flight; working tree = det_term/det_proof + 2 tests, ruff clean, module pyright clean.
+
+## Gate-speed upgrades approved by user (apply AFTER btzql8tby completes)
+- xdist: add pytest-xdist dev dep (uv add --dev pytest-xdist -> touches uv.lock, DO NOT do while a gate runs), gate.ps1 pytest stage -> 'uv','run','pytest','-n','auto'. Mutation's focused per-mutant runs stay serial.
+- Mutation scoping in gate.ps1: compute changed set = git status --porcelain paths UNION git diff --name-only HEAD~1..HEAD. If intersection with (TRUSTED = cold_start/{checker,proof,sequent,syntax,theory}.py; FOCUSED tests list from tools/mutate.py _test_command lines 197-206: test_checker, test_kernel_boundaries, test_theory, test_quantifiers, test_quant_soundness, test_logic, test_sorts, test_relations, test_properties, test_rings; plus tools/mutate.py) is empty -> print explicit 'mutation campaign SKIPPED (change set outside trusted base)' and skip stage; else run. Env var GATE_FULL=1 forces full campaign. Never silent-skip.
+- Facts: gate.ps1 = Invoke-Gate stages pytest/ruff/pyright/lean-gen/lean-fresh/lean-compile/mutation; mutate.py mutates ONLY 5 trusted files (44 mutants), runs 10 focused test files per mutant; pytest addopts=-q.
+- Risk to watch with -n auto: test ordering/shared-state assumptions; if red under xdist but green serial, scope -n to a stable subset or drop.
+- Still pending: det commit awaits gate btzql8tby (was 66%).
+
+## det committed; gate-speed upgrades applied; validation gate running
+- Gate btzql8tby GREEN (0/44) -> det J = 1 theorem COMMITTED: cold-start 0239223 "Prove det J(F) = 1, derivatives inside the statement". Certificate pillars all landed: collisions (7a03a2d), verify registration (6e8cf15), derivative lemmas (1495cc8), det (0239223).
+- Speed upgrades applied per user approval: (1) pytest-xdist 3.8.0 added via uv add --dev (uv.lock + pyproject changed); gate.ps1 pytest stage now '-n','auto'. (2) Mutation scoping block in gate.ps1: $MutationScope = 5 trusted + tools/mutate.py + 10 focused tests; $Changed = git diff --name-only HEAD + untracked + HEAD~1..HEAD; skip stage with LOUD yellow message unless intersection nonempty or GATE_FULL=1.
+- Validation gate running: task btd5jj20d. Change set (gate.ps1, pyproject, uv.lock) is OUTSIDE mutation scope -> expect SKIPPED message + xdist-parallel pytest; measure new wall-clock vs ~4-6min baseline.
+- WATCH: xdist may surface test-order/shared-state failures (cross-process verify tests, Hypothesis, lean freshness diff). If pytest red under -n auto but green serial: investigate specific tests, consider excluding them from parallelization rather than reverting.
+- After green: commit gate upgrades. Remaining certificate scope: existential non-injectivity, D(0)/D(1) lemmas, ledger row, lean model cash-out, README pointer. Batch these as ONE working block + single gate (batching decision already made).
+
+## Final batch block in progress (existential + D-constants + toll reporter)
+- Committed: cbe2ea6 (gate speedups: xdist -n auto + mutation scoping w/ loud skip; validated GREEN with SKIPPED message firing correctly, gate noticeably faster).
+- Ledger finding: ledger.py is BRIDGE-specific (interp artifacts) — forcing a theorem row would misuse it. In-idiom substitute: `python -m cold_start.jacobian2_proofs` __main__ that re-checks all theorems and prints proof-node tolls (still TODO this block).
+- WRITTEN (uncommitted): tests for derivation_zero/one_proofs (D(0)=0, D(1)=0 per derivation) + noninjectivity theorem. Impl: derivation proofs as Trans chains (additivity/Leibniz + CHAR2); _noninjectivity_body/statement (6-var nested exists over And(3 eqs, Not(Eq(x1,x2)))); noninjectivity_proof (collision proofs Trans-joined pairwise, and_intro fold, NONTRIVIAL axiom for 0≠1, 6 ExistsIntro wraps innermost-first with claims rebuilt per level).
+- FIXING NOW: (1) d1.name pyright error in derivation_one_proofs line ~270 (same Term.name issue — use name string like zero fix); (2) noninjectivity_proof has leftover debris (assert-or-True line, del conj, unused claim var) — REWRITE that function body clean before running. My repeated failure mode this session: writing draft debris into files — slow down, write final code once.
+- And/and_intro: And is n-ary right-nested; and_intro(a,b,pa,pb) binary — fold matches. ExistsIntro(claim, witness, sub). exists(name, sort, body) binds free Var(name).
+- NEXT: finish fixes, pytest tests/test_jacobian2.py, then __main__ toll reporter, ruff/pyright, ONE gate, commit block. Then jc README pointer (jc-side). Lean model cash-out: assess lean/models.py cost; if heavy, declare follow-up.
+
+## Batch block complete pending gate: FULL CERTIFICATE IN COLD-START
+- 12/12 tests green. Landed this block (uncommitted): derivation_zero/one_proofs (D(0)=0, D(1)=0 x3 — Trans chains, tolls 45/69); noninjectivity_statement/proof (closed 6-quantifier existential; and_intro fold over pairwise Trans of collision proofs + Axiom(NONTRIVIAL); self-diagnosing shape check; toll 936); __main__ toll reporter (_toll walks Pf dataclass nodes; re-checks all via check()).
+- TOLL TABLE (python -m cold_start.jacobian2_proofs): collisions 1,261; derivative lemmas 25,281; det J=1 47,147; D(0) 45; D(1) 69; non-injectivity 936; TOTAL 74,739 proof nodes — ~12x cheaper than ring_z bridge (876K). Great number for the writeup.
+- Fixed: Term.name pyright errors (use name strings), noninjectivity draft debris rewritten clean, ruff import sort (auto-fixed), _toll unknown-tuple typing via cast. Just added `from typing import cast` — VERIFY pyright 0 errors next.
+- Remaining before commit: pyright full 0 errors, pytest once more, ONE gate (expect mutation SKIP + xdist), commit block. Then: jc README pointer (jc side, small); lean model cash-out ASSESS (maybe follow-up); memory write-up of session lessons.
+- Recurring lesson noted twice now: I keep writing draft debris into files then fixing — write final code once; and read gate output in a SEPARATE call before any git command.
+
+## Stop checkpoint: batch block done locally, closing gate bnleus83i running
+- ALL-LOCAL-GREEN confirmed: pyright full 0 errors, 12/12 pytest, ruff clean. Closing gate bnleus83i in background (expect xdist-fast + mutation SKIP since change set is jacobian2/tests only... wait: tests/test_jacobian2.py NOT in mutation's focused list -> skip fires correctly).
+- Committed meanwhile: jc 1d314c8 (README pointer to cold-start certificate). jc README paragraph cites 74,739-node toll + toll-table command.
+- Lean model cash-out ASSESSED AND DEFERRED: lean/models.py registration must interpret every DIFF_RING_2 symbol AND pay every axiom in Lean over a poly carrier (assoc/comm/distrib/Leibniz proofs — days of Lean work); jc already has JcChar2.lean covering the content. Declared follow-up.
+- Memory written: ~/.claude/projects/C--Users-Q-code-jc/memory/{conjecture-machine.md, cold-start-house-rules.md, MEMORY.md} — program architecture, follow-ups (z3 calibration, mod-p bridge, payload #2), gate/commit discipline, no-AskUserQuestion.
+- ON GATE REPORT (read output in separate call FIRST): if GREEN -> commit block in cold-start (jacobian2_proofs.py + tests: existential + D-constants + toll main). Then final summary to Q.
+
+## SESSION MILESTONE: certificate complete and committed
+- Closing gate bnleus83i GREEN (mutation correctly SKIPPED). Final commit bfd0b24. cold-start main now: 7a03a2d theory+collisions -> 6e8cf15 verify -> 1495cc8 derivatives -> 0239223 det -> cbe2ea6 gate speed -> bfd0b24 existential+tolls. jc: 1d314c8 README pointer.
+- The whole scoped integration is DONE except deferred Lean model cash-out. Machine program follow-ups live in memory/conjecture-machine.md.
+
+## Final state (nothing in flight)
+- No blockers, no background tasks running, no uncommitted work in either repo except jc's pre-existing unrelated src/jc/char2.py diff (generic_degree preprocessing — was dirty before this session's work; left alone deliberately).
+- Session complete: cold-start certificate of the jc char-2 map (6 commits), gate speedups, jc README pointer, memory files written. Next candidates (user's call): Lean model cash-out, z3 char-0 calibration, payload #2.

@@ -172,7 +172,7 @@ def tame_score(census):
 # verdicts therefore come from elimination over GF(2), not from counting.
 
 
-def generic_degree(comps, gens_order=(0, 1, 2)):
+def generic_degree(comps, gens_order=(0, 1, 2), monomial_order="grevlex"):
     """The exact generic degree of the map over F_2-bar: the dimension of
     GF(2)(A,B,C)[x,y,z] / (F - (A,B,C)) computed from the Groebner
     staircase over the function field of the target.
@@ -233,8 +233,8 @@ def generic_degree(comps, gens_order=(0, 1, 2)):
     # gens it silently rebuilds them over QQ(A,B,C), i.e. characteristic 0,
     # and every degree that differs between char 0 and char 2 comes out
     # wrong (this produced 174 phantom "tame counterexamples" once).
-    basis = sp.groebner(system, *gens, order="grevlex", domain=dom)
-    lead = [g.monoms(order="grevlex")[0] for g in basis.polys]
+    basis = sp.groebner(system, *gens, order=monomial_order, domain=dom)
+    lead = [g.monoms(order=monomial_order)[0] for g in basis.polys]
     n = len(gens)
     bound = []
     for i in range(n):
