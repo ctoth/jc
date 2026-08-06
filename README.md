@@ -38,6 +38,14 @@ Lean-kernel certificate of the determinant identity and the collision (no
 imports, no axioms, no `sorry`); `tests/test_unicorn.py` verifies
 everything else. Full account in [REPORT.md](REPORT.md).
 
+The map also carries a second, independent machine certificate in the
+[cold-start](../cold-start) proof system (`cold_start/jacobian2_proofs.py`
+there): the collisions, the nine Jacobian-matrix entries, det J = 1 with
+the derivative axiomatized as a differential-ring symbol rather than
+computed by trusted code, and non-injectivity as one closed existential
+sentence — 74,739 proof nodes total, re-derived by its De Bruijn checker
+(`python -m cold_start.jacobian2_proofs` prints the toll table).
+
 The Jacobian conjecture (Keller, 1939) asserted that a polynomial map
 F: ℂⁿ → ℂⁿ with nonzero constant Jacobian determinant is invertible. In July
 2026, Levent Alpöge announced a counterexample in dimension 3 (found in
