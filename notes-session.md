@@ -133,6 +133,15 @@
 - note.tex updated: normal form + census-agreement paragraph, Alpöge date July 19–20, Gao cite w/ TODO.
 - Background: hunt A 800k/0 tame; cubic ~4k+/10144 all even; hunt C collecting.
 
+## Inequivalence attempt: all invariants AGREE (equivalence now leading hypothesis)
+- Censuses: identical F₄..F₃₂ (both S₃ monodromy, Chebotarev 1/6 split fraction — censuses can't separate such maps in principle).
+- Jelonek/geometric stratification (w-adjunction staircase, per rational target): identical F₂ ({0:1,1:3,3:4}), F₄ ({0:3,1:13,3:48}), F₈ ({0:7,1:57,3:448}). BOTH maps: drop locus has exactly q² points = (q−1) empty fibers + (q²−q+1) singletons. Eerily clean shared fine structure.
+- Eliminant LCs differ ((A+BC)² vs B²) but NOT invariant (both surfaces are automorphism-equivalent graphs ≅ A²) — no distinction.
+- note.tex updated: honest "attempted and failed to distinguish on every invariant tried; consistent with equivalence, not established; explicit search in progress."
+- NEXT (decisive): meet-in-the-middle BFS/SAT search for automorphism pair β∘HK∘α = N. Generators: GL₃(F₂) (168) + translations (8) + single-monomial elementary shears (xᵢ += monomial in other vars, deg ≤ 3, self-inverse in char 2). States = canonical comps tuples; prune degree > 6; expand balls from both normal forms, intersect. If found ⇒ equivalent (methodology note); if exhausted at depth d ⇒ 'not equivalent by compositions of ≤ d generators' (publishable partial).
+- Background: cubic classification still going (~4k+/10144 all even); hunt A ~900k+/0 tame; hunt C collecting.
+- Pending user decisions: authorship line, Gao initial (my 'H.' is a GUESS — flagged TODO), SBS comment.
+
 ## State / next
 - Just addressed user's 3 review points (exact membership; is_generic instead of assume(n!=1); Groebner certificate).
 - BLOCKER (trivial): test_conjecture.py line 62 uses fiber_certificate without importing it — fix import, then run full suite.

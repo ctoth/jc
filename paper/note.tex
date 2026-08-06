@@ -81,11 +81,19 @@ puts $F$ in the unit-product normal form
 every component built from the same $(1+\cdot)$-unit grammar as the
 characteristic-$0$ counterexample; Huq-Kuruvilla's map reads
 $(x(1+xy),\; y+xz(1+xy),\; z(1+x^2z))$ in the same grammar. Whether the
-two maps are equivalent under composition with automorphisms is open;
+two maps are equivalent under composition with automorphisms is open.
+We attempted to distinguish them and failed on every invariant tried:
 their fiber-size censuses agree exactly over
-$\F_4, \F_8, \F_{16}, \F_{32}$ (consistent with both having $S_3$
-monodromy, so censuses may be unable to separate them), and we are
-attempting to distinguish them by finer invariants.
+$\F_4, \F_8, \F_{16}, \F_{32}$ (both maps have $S_3$ monodromy, with
+split-fiber fractions approaching the Chebotarev value $1/6$, so
+censuses are likely unable to separate any two such maps), and the
+stratification of targets by \emph{geometric} fiber size --- computed
+per rational target by Gr\"obner staircase after adjoining a primitive
+element --- also agrees exactly over $\F_2, \F_4, \F_8$: for both maps
+the fiber-drop locus has precisely $q^2$ rational points, of which
+$q-1$ have empty fiber and the rest singleton fibers. These agreements
+are consistent with equivalence, which we have not established; an
+explicit search for a conjugating pair of automorphisms is in progress.
 
 Since the extension degree is $3$ and the inseparable degree of a
 finite extension in characteristic $2$ is a power of $2$ dividing the
