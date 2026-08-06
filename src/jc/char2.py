@@ -191,27 +191,63 @@ def generic_degree(comps, gens_order=(0, 1, 2)):
     x, y, z, A, B, C = sp.symbols("x y z A B C")
     dom = sp.GF(2).frac_field(A, B, C)
     f1, f2, f3 = (_to_expr(c) for c in comps)
-    gens = tuple((x, y, z)[i] for i in gens_order)
+    system = [f1 - A, f2 - B, f3 - C]
+    gens = [(x, y, z)[i] for i in gens_order]
+
+    # Preprocessing a good CAS would do automatically: while some equation
+    # is monic-linear in a variable (coefficient a nonzero constant), solve
+    # it out and substitute. This is exact (the substitution is a ring
+    # isomorphism of the quotient) and turns triangular maps like
+    # (x + y^3, ...) from Buchberger-killers into small systems.
+    changed = True
+    while changed and len(gens) > 1:
+        changed = False
+        for eq_i, eq in enumerate(system):
+            for v in list(gens):
+                p = sp.Poly(eq, v)
+                if p.degree() != 1:
+                    continue
+                lead = p.all_coeffs()[0]
+                if lead.free_symbols & set(gens):
+                    continue  # non-constant coefficient: not safe to invert
+                if sp.simplify(lead) == 0:
+                    continue
+                # v = -(rest)/lead; char-agnostic via solve of linear poly
+                rest = eq - lead * v * 1
+                sol = sp.expand(-rest / lead)
+                system = [
+                    sp.expand(other.subs(v, sol))
+                    for j, other in enumerate(system)
+                    if j != eq_i
+                ]
+                gens.remove(v)
+                changed = True
+                break
+            if changed:
+                break
+
+    if not gens:
+        return 1  # fully triangular: the map is an automorphism-like solve
+
     # The domain MUST go to groebner itself: given Poly inputs and explicit
     # gens it silently rebuilds them over QQ(A,B,C), i.e. characteristic 0,
     # and every degree that differs between char 0 and char 2 comes out
     # wrong (this produced 174 phantom "tame counterexamples" once).
-    basis = sp.groebner(
-        [f1 - A, f2 - B, f3 - C], *gens, order="grevlex", domain=dom
-    )
+    basis = sp.groebner(system, *gens, order="grevlex", domain=dom)
     lead = [g.monoms(order="grevlex")[0] for g in basis.polys]
+    n = len(gens)
     bound = []
-    for i in range(3):
+    for i in range(n):
         powers = [e[i] for e in lead if all(v == 0 for j, v in enumerate(e) if j != i)]
         if not powers:
             return None
         bound.append(min(powers))
+    import itertools as it
+
     return sum(
         1
-        for i in range(bound[0])
-        for j in range(bound[1])
-        for k in range(bound[2])
-        if not any(li <= i and lj <= j and lk <= k for (li, lj, lk) in lead)
+        for combo in it.product(*(range(b) for b in bound))
+        if not any(all(l <= c for l, c in zip(le, combo)) for le in lead)
     )
 
 

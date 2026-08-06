@@ -151,13 +151,18 @@ F_{\mathrm{hold}} = \bigl(\, x + y^3,\;\;
 y + x^3 + xy^2 + xz^2 + y^3 + y^2z,\;\;
 z + x^3 + x^2y + xy^2 + xz^2 + y^2z + yz^2 \,\bigr),
 \]
-has $\det JF = 1$, a rational $3$-point collision over $\F_2$ already
-(so it is far from injective), a size-$2$ rational fiber (so it is
-wild), and generic degree between $6$ (a specialized geometric fiber
-of six points) and $27$ (B\'ezout); its exact degree has so far
-defeated Buchberger's algorithm over $\F_2(A,B,C)$ under twelve
-order configurations. We know of no comparable public stress instance
-for function-field Gr\"obner bases in characteristic $2$. The final
+has $\det JF = 1$, a rational $3$-point collision over $\F_2$ already,
+a size-$2$ rational fiber (so it is wild), and generic degree
+\emph{exactly $6$} --- even, so the parity pattern survives its hardest
+instance. The number was obtained twice: by Buchberger over
+$\F_2(A,B,C)$, which fails under most generator orders but succeeds
+under $(y,z,x)$ in under $15$ minutes, and, far more cheaply, by
+observing that $F_1 - A$ is monic linear in $x$, substituting
+$x = A + y^3$, and working with the resulting two-variable system ---
+elimination a structure-aware solver performs automatically and a
+generic Gr\"obner pipeline does not. We offer the map, and its harder
+siblings in the stratum, as stress instances for function-field
+Gr\"obner computation in characteristic $2$. The final
 histogram will appear in the repository \cite{repo} and a revision.
 
 \begin{quote}
