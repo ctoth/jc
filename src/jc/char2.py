@@ -172,7 +172,7 @@ def tame_score(census):
 # verdicts therefore come from elimination over GF(2), not from counting.
 
 
-def generic_degree(comps, gens_order=(0, 1, 2), monomial_order="grevlex"):
+def generic_degree(comps, gens_order=None, monomial_order="grevlex"):
     """The exact generic degree of the map over F_2-bar: the dimension of
     GF(2)(A,B,C)[x,y,z] / (F - (A,B,C)) computed from the Groebner
     staircase over the function field of the target.
@@ -184,7 +184,10 @@ def generic_degree(comps, gens_order=(0, 1, 2), monomial_order="grevlex"):
 
     gens_order permutes the Groebner generators; the dimension is
     order-invariant but Buchberger's running time is not — maps that wedge
-    under one order often finish instantly under another.
+    under one order often finish instantly under another. When None
+    (default), the order is chosen structurally: variables that occur
+    linearly in some equation go last, so Buchberger effectively performs
+    the elimination that a triangular-decomposition solver would.
     """
     import sympy as sp
 
@@ -192,7 +195,7 @@ def generic_degree(comps, gens_order=(0, 1, 2), monomial_order="grevlex"):
     dom = sp.GF(2).frac_field(A, B, C)
     f1, f2, f3 = (_to_expr(c) for c in comps)
     system = [f1 - A, f2 - B, f3 - C]
-    gens = [(x, y, z)[i] for i in gens_order]
+    gens = [x, y, z] if gens_order is None else [(x, y, z)[i] for i in gens_order]
 
     # Preprocessing a good CAS would do automatically: while some equation
     # is monic-linear in a variable (coefficient a nonzero constant), solve
@@ -228,6 +231,17 @@ def generic_degree(comps, gens_order=(0, 1, 2), monomial_order="grevlex"):
 
     if not gens:
         return 1  # fully triangular: the map is an automorphism-like solve
+
+    if gens_order is None and len(gens) > 1:
+        # Structure-aware order: a variable occurring linearly in some
+        # equation (with any coefficient) goes last — Buchberger then
+        # eliminates it cheaply, which is what made the stratum's
+        # "hard core" fall (26 of 29 holdouts had exactly this shape).
+        linearish = [
+            v for v in gens
+            if any(sp.Poly(eq, v).degree() == 1 for eq in system)
+        ]
+        gens = [v for v in gens if v not in linearish] + linearish
 
     # The domain MUST go to groebner itself: given Poly inputs and explicit
     # gens it silently rebuilds them over QQ(A,B,C), i.e. characteristic 0,
