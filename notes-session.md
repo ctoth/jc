@@ -59,6 +59,57 @@
 - IN FLIGHT: cubic-homogeneous 3D classification (task bv2npofv2 → cubic_exact.json): 10144 det-units at ~3/s ≈ 55min; so far all even. Will be THEOREM 3.
 - Current work: finish test_strata.py plane tests (Pyright noise on 'from jc import plane2' — likely stale venv index; verify by running pytest), then README/REPORT writeup + commit. Blocker: none; waiting on cubic task.
 
+## Cubic classification saga
+- v1 (classify_cubic_exact.py, task bv2npofv2) WEDGED at ~map 1000-1200: sympy Buchberger over GF(2)(A,B,C) can hang on specific cubic systems; no per-map timeout. Killed.
+- v2 (classify_cubic_v2.py, task b71oxw1up → cubic_exact.jsonl): batch subprocesses (40 maps/batch, hard subprocess.run timeout, split-on-timeout down to single maps → deferred list). Resumable via JSONL. Monitor bwudbosvo watches. ~1000 maps had been classified by v1 (all even: {1:79, 2:306, 4:360, 6:256} at map 1000) — v2 redoes them.
+- Frobenius-affine PROPOSITION (proved, in tests + REPORT): 2D quadratic-only + det J=1 ⇒ H additive (v ↦ v+Mv^(2)) ⇒ degree = |kernel| = 2^k. Conceptual parity proof for that slice.
+- REPORT.md drafted: context, Parity Conjecture, Theorems 1 (plane 16384/160/{1:10,2:54,4:48,6:48}) + 2 (3D quadratic 262144/4096/{1:176,2:728,4:1176,6:672,8:1344}), methodology (census camouflage, char-0 groebner trap, wild dominance). Theorem 3 section = placeholder pending cubic_exact.jsonl → MUST fill before committing REPORT.
+- Commits so far: 5b59c9f, 04ddf51, d9bfb56, 3923b2f, 4b7092c (theorem: 3D quadratic), 2e8b8c0 (theorem: plane).
+- NEXT on cubic completion: histogram from JSONL (+ handle deferred maps manually via alternative methods), fill REPORT theorem 3, README pointer to REPORT, add cubic theorem test (sampled + slow-full from det_units regeneration — note: cubic det_units enumeration takes 371s; slow test should re-derive), final commit, then declare breakthrough & stop.
+
+## Latest state (goal mode, cubic pending)
+- Commits now: ...4b7092c (thm 3D-quad), 2e8b8c0 (thm plane), 3a21127 (structure proposition tests).
+- 3D quadratic det-unit STRUCTURE PROVED: F_i = id + d(y+ex)(z+fx)(+cyclic) + free Frobenius squares; 8 patterns × 512. Degree-6 entries show odd tame factors exist but always ×2 — "odd part never travels alone" = real content of conjecture.
+- REPORT.md drafted (theorem 3 section = explicit in-progress placeholder — DO NOT COMMIT until filled). README updated with parity-conjecture section (references REPORT).
+- test_strata.py: 7 fast tests green (incl. cubic all-even-parity block: 3004 det-units pinned, seeded degree sample; plane + 3D-quad exhaustive counts; Frobenius-affine + 8-pattern symbolic proofs). Slow tests: full classifications.
+- Cubic classification v2 RESUMED as task bcf3v3sqx (monitor b1lo80800): resumes cubic_exact.jsonl (1000/10144 done, all even so far {1:79,2:306,4:360,6:256}). Retuned: batch timeout 30+3n s, first-missing-map isolation (worker sequential ⇒ first missing = wedged), singles deferred at 45s. Expect DEFERRED for the v1-wedge map (~idx 1000-1040).
+- On DONE: build histogram from JSONL (incl. deferred count), handle deferred maps (try higher timeout retry or lex order or report as deferred-with-bound), fill REPORT thm 3 + slow-test histogram assert, commit REPORT+README+tests, summarize breakthrough, allow stop.
+- Breakthrough claim when done: Parity Conjecture + 3 exhaustive theorems + 2 conceptual proofs (Frobenius-affine; 2D-quadratic forced additivity) + structure classification + validated tooling; positioned vs Adjamagbo separable JC (vacuous for p=2 if conjecture holds).
+
+## Cubic run live status
+- Pipeline fully automated: main sweep (bcf3v3sqx) + auto-crack loop (bjmbgazhu, runs crack_deferred.py every 60s until main prints DONE) + monitor (b1lo80800).
+- Wedge maps so far: 1036 (deg 6), 1041 (deg 6), 1203 (deg 6, auto-cracked ✓), 1480 (deferred, auto-crack next pass). ALL crack instantly with generator order (x,z,y) = perm (0,2,1); all are y³-heavy family; all degree 6 = even ⇒ parity intact.
+- ~1519 maps classified (grep '"d"' cubic_exact.jsonl), all degree 1 or even.
+- On main DONE + final auto-crack pass: build histogram from JSONL (watch duplicate i records — dedupe by i, prefer records with 'd'), check count == 10144, fill REPORT.md theorem 3 + slow-test histogram, commit, declare breakthrough.
+- No blockers; pure compute wait (~est 30-60 min remaining given wedge overhead).
+
+## GO-HARD phase (user raised bar: push ONLY if breakthrough equivalent to Alpöge's)
+- Bar: (a) actual tame char-2 counterexample (answers SBS open question — the true equivalent), or (b) proof-grade parity theorem. Strata theorems alone insufficient → NO git push yet.
+- Key insight: original counterexample is Z-LINEAR (Pz+Q shape), NOT BCW id+H — our exhausted strata were the wrong neighborhood!
+- NEW MACHINERY (committed? not yet): src/jc/anf.py (SymPoly: GF(2)[x,y,z] with unknown Boolean coefficient bits in ANF) + src/jc/satfinder.py (det J = 1 → CNF via Tseitin AND-aux + chained XOR; Cadical195 model enumeration w/ blocking clauses over free bits; instantiate()). python-sat added to deps.
+- VALIDATED: SAT sweep of quadratic stratum → exactly 4096 unit-Jacobian maps in 0.0s (matches brute-force theorem 1 count). instantiate → det_j check ✓.
+- RUNNING: zlinear_hunt.py mode A (task bxotr04xj, monitor bmvyof6ob): P,R,T deg≤2 (w/ const), Q,S,U deg≤3 nonconst = 45 bits = 2^45 family; SAT-enumerates ALL det-unit members; census triage → exact generic_degree (order (0,2,1)) for interesting + 1-in-50 systematic sample. Mode B ready (deg 4 pools) after A.
+- Risk: det-unit model count in family A could be astronomically large (blocking-clause enumeration one at a time). If >500k models, restructure (add constraints: require nonconstant z-part, symmetry breaking, or cluster by z-part pattern).
+- STILL RUNNING: 3 parallel cubic classification workers (b8gewu3b5/b6amybjfn/bi32cbskn, stride 3, worker order (0,2,1)) + auto-crack loop (bjyrpzfx1) + quiet monitor (bzaxjj1hg). Theorem 3 completes on their DONE.
+- Wedge maps resolved so far: 1036→6, 1041→6, 1203→6 (all (0,2,1)-cracked). 1480, 1554, 1581, 1703 deferred → auto-crack.
+
+## Hunt engineering log (latest)
+- Z3 question answered: NOT using/needing Z3 — pure GF(2) XOR/AND ⇒ plain SAT (CaDiCaL via python-sat); CryptoMiniSat (native XOR) is the upgrade lever if encoding strains. Validated: SAT reproduces quadratic stratum's 4096 exactly in 0.0s.
+- zlinear_hunt redesigned twice: (1) phase-1-only (enumerate + census triage → JSONL; NO in-process Groebner — wedge-proof; phase 2 = hardened batch classifier). (2) F8 tame-signature sieve ({1,3}-only fibers) — of ~30k F4-interesting maps, ZERO passed F8 sieve so far: camouflage-grade rarity confirmed, phase 2 will be cheap.
+- Orphan lesson: TaskStop kills pwsh wrapper, NOT python child — must Stop-Process via Win32_Process CommandLine match. (One orphan produced mixed-criteria zlinear_interesting.jsonl — deleted.)
+- Frobenius quotient optimization (just implemented, restart pending): bits absent from all det conditions (Q,S,U monomials with all-even exponents: x², y² per component = 6 bits in mode A) are det-irrelevant ⇒ SAT enumerated each base model 64×. New: satfinder.unconstrained_bits + fix_zero param; hunt expands frobenius_variants(base) explicitly. 64× fewer SAT models. Also removed seen-dedupe (bit↔monomial bijection ⇒ no dups; memory).
+- Current hunt task bps1ge05j (monitor boopn24bh) still running OLD code at ~50k models — KILL & RESTART with quotient next step (kill python child properly!).
+- Cubic aggregate: 2624/10144, hist {1:150, 2:667, 4:967, 6:758, 10:67, deferred:15}, odd≥3 NONE. New degree 10 appeared (even ✓). Watch: earlier live-print showed 'None: 2' — investigate at end. ETA ~1.5h.
+- Family A too low-degree to contain the original's analogue (P deg≤2 vs (1+xy)³ deg 6) — mode B (deg 4) and mode C (Sym-mirror supports) queued after A.
+
+## *** THE UNICORN — BREAKTHROUGH FOUND AND VERIFIED (pre-commit state) ***
+- MAP (over F₂): F1 = z + xy + xy² + x²y² + x²yz + x²y²z + x³y²z; F2 = y + xy² = y(1+xy); F3 = x + y + xy² + x²z. Variant with F3 = x + x²z also valid. Found by SAT-sweep of Sym-mirror z-linear family (mode C) within 3000 models; 6 family members total so far (all census {1:281, 3:77} at F₈).
+- VERIFIED (all independent): det J ≡ 1 (sympy + ANF + Lean kernel); generic degree 3 (function-field Gröbner + irreducible separable cubic x³+x+1 eliminant specialization at target (0,1,0)); fibers ∈ {1,3} over F₈/F₁₆/F₃₂/F₆₄ covering every point; HAND-CHECKABLE F₂-rational collision (0,0,1),(1,0,1),(1,1,1) ↦ (1,0,0) (on 0/1 points F1 collapses to z+xy+xyz, F2=y+xy, F3=x+y+xy+xz).
+- MEANING: refutes Adjamagbo separable/tame JC in char 2 (the case Alpöge–Fable couldn't touch, SBS open question) AND refutes our own parity conjecture (which aimed the search — honest science). Alpöge-equivalent breakthrough per user's bar ⇒ PUSH authorized after commit.
+- ARTIFACTS DONE: src/jc/unicorn.py; tests/test_unicorn.py (9/9 green: det, sympy-independent det, collisions, degree 3, censuses, eliminant certificate, pure-python hand check, parity refutation); src/jc/lean_export2.py → lean_export/JcChar2.lean COMPILES (LEAN_OK: kernel-checked det J=1 + collision + non-injectivity; degree-3 NOT formalized, documented); tests/test_lean.py parameterized over both certs (just edited, NOT yet run).
+- REMAINING before commit+push: (1) run full suite; (2) reframe tests/test_parity_conjecture.py (conjecture refuted — keep as BCW-strata-parity observation + note); (3) README + REPORT rewrite (unicorn front and center; parity conj → refuted; strata theorems stand as "where parity holds"); (4) commit; (5) git remote missing — need gh repo create (private first?) or ask; user said "push when committed" + equivalence met.
+- Background: hunt A 400k models 0 tame (family A clean); hunt C still collecting family; cubic workers ~3900/10144 all even + 10s; auto-crack running. These finish on their own; results folded into REPORT numbers as available.
+
 ## State / next
 - Just addressed user's 3 review points (exact membership; is_generic instead of assume(n!=1); Groebner certificate).
 - BLOCKER (trivial): test_conjecture.py line 62 uses fiber_certificate without importing it — fix import, then run full suite.

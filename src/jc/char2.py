@@ -172,7 +172,7 @@ def tame_score(census):
 # verdicts therefore come from elimination over GF(2), not from counting.
 
 
-def generic_degree(comps):
+def generic_degree(comps, gens_order=(0, 1, 2)):
     """The exact generic degree of the map over F_2-bar: the dimension of
     GF(2)(A,B,C)[x,y,z] / (F - (A,B,C)) computed from the Groebner
     staircase over the function field of the target.
@@ -181,18 +181,23 @@ def generic_degree(comps):
     cardinality with no multiplicity: odd >= 3 means tame non-injective —
     the char-2 unicorn — while even means wild. Returns None if the
     generic fiber is not finite (the map is not dominant-with-finite-fibers).
+
+    gens_order permutes the Groebner generators; the dimension is
+    order-invariant but Buchberger's running time is not — maps that wedge
+    under one order often finish instantly under another.
     """
     import sympy as sp
 
     x, y, z, A, B, C = sp.symbols("x y z A B C")
     dom = sp.GF(2).frac_field(A, B, C)
     f1, f2, f3 = (_to_expr(c) for c in comps)
+    gens = tuple((x, y, z)[i] for i in gens_order)
     # The domain MUST go to groebner itself: given Poly inputs and explicit
     # gens it silently rebuilds them over QQ(A,B,C), i.e. characteristic 0,
     # and every degree that differs between char 0 and char 2 comes out
     # wrong (this produced 174 phantom "tame counterexamples" once).
     basis = sp.groebner(
-        [f1 - A, f2 - B, f3 - C], x, y, z, order="grevlex", domain=dom
+        [f1 - A, f2 - B, f3 - C], *gens, order="grevlex", domain=dom
     )
     lead = [g.monoms(order="grevlex")[0] for g in basis.polys]
     bound = []

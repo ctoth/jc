@@ -13,6 +13,8 @@ import subprocess
 import pytest
 
 from jc.lean_export import CORPUS_PATH, export_corpus
+from jc.lean_export2 import CORPUS_PATH as CHAR2_PATH
+from jc.lean_export2 import export_corpus as export_char2
 
 
 def _lean_command():
@@ -48,34 +50,44 @@ def _require_lean():
     return cmd
 
 
-def test_checked_in_certificate_is_fresh():
-    assert CORPUS_PATH.read_text(encoding="utf-8") == export_corpus()
+CERTS = [
+    (CORPUS_PATH, export_corpus, "((0, 2, 0), 4)", "((0, 2, 0), 5)"),
+    (CHAR2_PATH, export_char2, "(1, 1, 0), (1, 2, 0)", "(1, 1, 0), (1, 3, 0)"),
+]
 
 
-def test_certificate_contains_no_escape_hatches():
-    text = CORPUS_PATH.read_text(encoding="utf-8")
+@pytest.mark.parametrize("path,export,_old,_new", CERTS, ids=["char0", "char2"])
+def test_checked_in_certificate_is_fresh(path, export, _old, _new):
+    assert path.read_text(encoding="utf-8") == export()
+
+
+@pytest.mark.parametrize("path,export,_old,_new", CERTS, ids=["char0", "char2"])
+def test_certificate_contains_no_escape_hatches(path, export, _old, _new):
+    text = path.read_text(encoding="utf-8")
     code = re.sub(r"/-.*?-/", "", text, flags=re.DOTALL)
     code = re.sub(r"--[^\n]*", "", code)
     for forbidden in ("sorry", "axiom", "native_decide", "import"):
         assert not re.search(rf"\b{forbidden}\b", code)
 
 
-def test_certificate_compiles_under_lean():
+@pytest.mark.parametrize("path,export,_old,_new", CERTS, ids=["char0", "char2"])
+def test_certificate_compiles_under_lean(path, export, _old, _new):
     cmd = _require_lean()
     result = subprocess.run(
-        cmd + [str(CORPUS_PATH)], capture_output=True, text=True, timeout=600
+        cmd + [str(path)], capture_output=True, text=True, timeout=600
     )
     assert result.returncode == 0, result.stderr or result.stdout
 
 
-def test_lean_rejects_a_corrupted_certificate(tmp_path):
-    """Negative control: perturb one coefficient of F and Lean must object
-    (the Jacobian determinant is no longer -2)."""
+@pytest.mark.parametrize("path,export,old,new", CERTS, ids=["char0", "char2"])
+def test_lean_rejects_a_corrupted_certificate(tmp_path, path, export, old, new):
+    """Negative control: perturb one monomial of F and Lean must object
+    (the Jacobian determinant identity fails)."""
     cmd = _require_lean()
-    text = CORPUS_PATH.read_text(encoding="utf-8")
-    corrupted = text.replace("((0, 2, 0), 4)", "((0, 2, 0), 5)", 1)
+    text = path.read_text(encoding="utf-8")
+    corrupted = text.replace(old, new, 1)
     assert corrupted != text
-    bad = tmp_path / "JcCorrupted.lean"
+    bad = tmp_path / f"Corrupted{path.stem}.lean"
     bad.write_text(corrupted, encoding="utf-8", newline="\n")
     result = subprocess.run(
         cmd + [str(bad)], capture_output=True, text=True, timeout=600

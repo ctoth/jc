@@ -10,6 +10,7 @@ requires-python = ">=3.13"
 dependencies = [
     "hypothesis>=6.165.2",
     "pytest>=9.1.1",
+    "python-sat>=1.9.dev7",
     "sympy>=1.14.0",
 ]
 

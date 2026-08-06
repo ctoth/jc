@@ -153,6 +153,45 @@ def test_3d_quadratic_det_units_are_classified_by_three_bits():
     assert 8 * 2**9 == len(quadratic_det_units())
 
 
+CUBIC_FREE = [
+    [(0, 3, 0), (0, 0, 3), (2, 1, 0), (2, 0, 1), (0, 2, 1), (0, 1, 2)],
+    [(3, 0, 0), (0, 0, 3), (2, 0, 1), (1, 2, 0), (1, 0, 2), (0, 2, 1)],
+    [(3, 0, 0), (0, 3, 0), (2, 1, 0), (1, 2, 0), (1, 0, 2), (0, 1, 2)],
+]
+
+
+def cubic_block_det_units():
+    """det-unit maps in the all-even-parity block of the cubic stratum
+    (Hi cubic homogeneous, no xyz, no constrained monomials)."""
+    subs = [
+        [frozenset(c) for n in range(7) for c in itertools.combinations(pool, n)]
+        for pool in CUBIC_FREE
+    ]
+    units = []
+    for h1 in subs[0]:
+        c1 = VARS[0] ^ h1
+        for h2 in subs[1]:
+            c2 = VARS[1] ^ h2
+            for h3 in subs[2]:
+                comps = (c1, c2, VARS[2] ^ h3)
+                if det_j(comps) == ONE:
+                    units.append(comps)
+    return units
+
+
+def test_cubic_stratum_block_counts_and_parity_sample():
+    """Fast layer of the cubic-homogeneous theorem: the all-even-parity
+    block holds 3004 of the stratum's 10,144 det-unit maps, and a seeded
+    sample classifies to degree 1 or even."""
+    units = cubic_block_det_units()
+    assert len(units) == 3004
+    rng = random.Random(2026)
+    for comps in rng.sample(units, 16):
+        d = generic_degree(comps)
+        assert d is not None
+        assert d == 1 or d % 2 == 0
+
+
 def test_census_screen_finds_no_tame_pattern_in_quadratic_stratum():
     f4 = GF2k(2)
     for comps in quadratic_det_units():

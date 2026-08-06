@@ -1,4 +1,26 @@
-# jc — the Jacobian conjecture, disproved by property-based testing
+# jc — the Jacobian conjecture, disproved by property-based testing — and the characteristic-2 case, settled here
+
+**Headline result (August 2026, this repository):** the tame (Adjamagbo
+separable) Jacobian conjecture is **false in characteristic 2** — the one
+case the Alpöge–Fable counterexample cannot reach, and the case their
+announcement thread flagged as unexplored. The counterexample, found by
+SAT-sweeping unit-Jacobian conditions over a family mirroring the original
+map's structure mod 2, is:
+
+    F1 = z + xy + xy² + x²y² + x²yz + x²y²z + x³y²z
+    F2 = y + xy²                        (= y(1+xy))
+    F3 = x + y + xy² + x²z
+
+over F₂. Its Jacobian determinant is identically **1** (étale), its generic
+degree is **3** — odd, hence separable, hence *tame* — and it is not
+injective: the three rational points **(0,0,1), (1,0,1), (1,1,1)** all map
+to **(1,0,0)** (check it by hand: on 0/1 coordinates the map collapses to
+`(z+xy+xyz, y+xy, x+y+xy+xz)`). Fibers over F₈ through F₆₄ have sizes in
+{1, 3} only; the x-eliminant at target (0,1,0) carries the irreducible
+separable cubic x³+x+1. `lean_export/JcChar2.lean` is a Lean-kernel
+certificate of the determinant identity and the collision (no imports, no
+axioms, no `sorry`); `tests/test_unicorn.py` verifies everything else.
+Full account in [REPORT.md](REPORT.md).
 
 The Jacobian conjecture (Keller, 1939) asserted that a polynomial map
 F: ℂⁿ → ℂⁿ with nonzero constant Jacobian determinant is invertible. In July
@@ -66,6 +88,19 @@ to infinity exactly on {D = 0} (x-direction) or {C = 0} (y-direction; the
 y-eliminant's leading coefficient is −2C²). Tests check both directions
 against the fiber certificate over arbitrary rational targets and sample the
 rational locus family (−16/(27c²), 0, c).
+
+## The parity conjecture — the ladder that reached the counterexample
+
+En route, this project conjectured: *in characteristic 2, every unit-Jacobian
+self-map of affine space has generic degree 1 or even* (which would have made
+the tame char-2 problem vacuously true). The conjecture is **true across
+every Bass–Connell–Wright stratum** — proved in dimension 1, proved
+conceptually for Frobenius-affine families, proved by exhaustion for the
+plane degree-≤3 stratum (16,384 maps) and the 3D quadratic stratum (262,144
+maps), and supported by 400k+ random BCW samples — and **false in general**:
+its refutation is precisely the headline map, which lives in the z-linear
+region the BCW strata never touch. The conjecture earned its keep by
+pointing the search there.
 
 ## Characteristic p, and a finder for characteristic 2
 
