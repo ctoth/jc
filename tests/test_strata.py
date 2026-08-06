@@ -102,6 +102,57 @@ def test_plane_stratum_full_classification():
     assert dict(hist) == {1: 10, 2: 54, 4: 48, 6: 48}
 
 
+def test_plane_quadratic_unit_jacobian_forces_frobenius_affine():
+    """The proved slice of the parity conjecture: in dimension 2 with H
+    purely quadratic, char 2 kills every square's derivative, so
+    det J = 1 + b*y + e*x — a unit iff the cross terms b, e vanish. The
+    surviving maps are v -> v + M v^(2): additive group homomorphisms,
+    whose generic degree is their kernel size, a power of 2."""
+    import sympy as sp
+
+    xx, yy, a, b, c, d, e, f = sp.symbols("x y a b c d e f")
+    f1 = xx + a * xx**2 + b * xx * yy + c * yy**2
+    f2 = yy + d * xx**2 + e * xx * yy + f * yy**2
+    jac = sp.Matrix(
+        [[sp.diff(f1, xx), sp.diff(f1, yy)], [sp.diff(f2, xx), sp.diff(f2, yy)]]
+    )
+    det = sp.Poly(sp.expand(jac.det()), xx, yy, a, b, c, d, e, f, modulus=2)
+    assert det == sp.Poly(1 + b * yy + e * xx, xx, yy, a, b, c, d, e, f, modulus=2)
+
+
+def test_3d_quadratic_det_units_are_classified_by_three_bits():
+    """Solving det J = 1 symbolically over GF(2) for the full 18-coefficient
+    quadratic family: square coefficients never appear (char 2 kills their
+    derivatives), and the nine cross coefficients reduce to three free bits
+    d = c0yz, e = c1xz, f = c2xy with c0xy = df, c2yz = df, c0xz = de,
+    c1yz = de, c1xy = ef, c2xz = ef. Hence exactly 8 cross-patterns times
+    2^9 free Frobenius parts = 4096 det-unit maps — matching the
+    exhaustive enumeration."""
+    import itertools as it
+
+    import sympy as sp
+
+    xx, yy, zz = sp.symbols("x y z")
+    s = sp.symbols("s1:10")  # arbitrary Frobenius (square) coefficients
+    count = 0
+    for d, e, f in it.product((0, 1), repeat=3):
+        h1 = d * (yy + e * xx) * (zz + f * xx) + s[0] * xx**2 + s[1] * yy**2 + s[2] * zz**2
+        h2 = e * (xx + d * yy) * (zz + f * yy) + s[3] * xx**2 + s[4] * yy**2 + s[5] * zz**2
+        h3 = f * (xx + d * zz) * (yy + e * zz) + s[6] * xx**2 + s[7] * yy**2 + s[8] * zz**2
+        jac = sp.Matrix(
+            [
+                [sp.diff(g, v) for v in (xx, yy, zz)]
+                for g in (xx + h1, yy + h2, zz + h3)
+            ]
+        )
+        det = sp.Poly(sp.expand(jac.det()), xx, yy, zz, *s, modulus=2)
+        assert det == sp.Poly(1, xx, yy, zz, *s, modulus=2), (d, e, f)
+        count += 1
+    assert count == 8
+    # and 8 cross-patterns x 2^9 square choices = the enumerated 4096
+    assert 8 * 2**9 == len(quadratic_det_units())
+
+
 def test_census_screen_finds_no_tame_pattern_in_quadratic_stratum():
     f4 = GF2k(2)
     for comps in quadratic_det_units():
