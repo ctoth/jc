@@ -125,6 +125,14 @@
 - REMAINING: run full suite; commit; push (authorized); tell user: scoop confirmed + corrections done + note repositioned; SBS comment draft should now credit HK. No pdflatex locally — .tex ships source-only.
 - Background: hunt A 600k+ models 0 tame; hunt C collecting; cubic ~4k/10144 all even.
 
+## Inequivalence program (user directive: 1 week, then post regardless)
+- CENSUS INVARIANT EXHAUSTED: ours vs HK IDENTICAL over F₄ (37/9), F₈ (281/77), F₁₆ (2161/645), F₃₂ (16865/5301). Both consistent with S₃ monodromy (3-fiber fraction → ~1/6 Chebotarev) ⇒ censuses likely CANNOT separate any two S₃ degree-3 maps — need finer invariants.
+- NORMAL FORM DISCOVERED (verified symbolically): target shear (a,b,c)→(a,b,c+b) puts OUR map into N = (z + xy(1+y+xy)(1+xz), y(1+xy), x(1+xz)) — det 1, degree 3 ✓. HK in same grammar: (x(1+xy), y+xz(1+xy), z(1+x²z)). Both in (1+·)-unit-product grammar of Alpöge construction. Equivalence question now a matching problem between two small normal forms.
+- Week plan: (1) finer invariants: Jelonek locus (symbolic eliminant LC mod 2) degree/components/point-counts per map; geometric-fiber-drop locus counts via staircase (F₂ targets + w-adjunction for F₄); (2) SAT search for bounded-degree automorphism pair β∘HK∘α = ours (ANF composition; enumerate GL₃(F₂)=168 linear parts × triangular elementaries); (3) Lean upgrade: kernel-certify fiber-ideal equality via explicit cofactor identities (sympy computes cofactors, Lean checks polynomial identities) — moves certificate onto load-bearing claim; (4) if cubic 16.7M finishes clean → restructure note around parity phenomenon per user (paper not note).
+- User decisions pending: authorship line in note.tex (comment must be resolved deliberately before posting); exact Gao initial (TODO in bib); SBS comment posting (their account).
+- note.tex updated: normal form + census-agreement paragraph, Alpöge date July 19–20, Gao cite w/ TODO.
+- Background: hunt A 800k/0 tame; cubic ~4k+/10144 all even; hunt C collecting.
+
 ## State / next
 - Just addressed user's 3 review points (exact membership; is_generic instead of assume(n!=1); Groebner certificate).
 - BLOCKER (trivial): test_conjecture.py line 62 uses fiber_certificate without importing it — fix import, then run full suite.
