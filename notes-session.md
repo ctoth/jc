@@ -150,6 +150,13 @@
 - Note's equivalence paragraph now the honest both-ways statement the user asked for. Ready for their 1-week window decision.
 - Background: hunt A 1M+ models 0 tame (monitor re-armed bmt2sl0nx); cubic classification ongoing; hunt C collecting.
 
+## Landscape update + paper restructure (user directives, both executed)
+- NEW SCOOP LAYER: Mondello, arXiv:2608.02634, July 29 2026 — DIMENSION-TWO char-2 counterexample (x + x²y + x⁴ + x⁶y², y + x⁵ + x⁶y + x⁷y² + x⁸y³), witnesses (0,1),(1,0),(1,1) → (0,1), Lean/Mathlib formalized + Aristotle replay (per aimath.robertj1.com tracker; ChatGPT/Codex-assisted, explicit AI disclosure). VERIFIED IN OUR TOOLING: det J = 1, degree 3, collision ✓. Derived by coordinate-permuting HK.
+- PAPER FULLY RESTRUCTURED per user: title "A parity obstruction and a SAT search for characteristic-2 Jacobian counterexamples". Lead = parity phenomenon (§2, incl. proofs for the provable slices + cubic 9,813/10,144 status) + SAT method with positive/negative contrast (§3: 2⁵⁸ mirror hit in 3k vs 2⁴⁵ generic 2.1M/zero — "monomial support transfer" as the heuristic finding). Map = witness (§4). Equivalence resistance = open-problem section (§5). AI-contribution disclosure section added per tracker norm (Fable ran search/verification/drafting; Toth directed/reviewed/responsible; claims rest on machine-checkable artifacts). Timeline cites HK + Mondello + Gao + Alpöge Jul 19-20.
+- README updated with both priority credits.
+- Cubic: 9,813/10,144 classified {1:400, 2:2158+, 4:3611, 6:3031, 10:613}, 331 deferred auto-cracking, map 4955 RESISTS all 6 orders (needs lex/bigger timeout later). Zero odd ≥3 throughout.
+- User-owned: author line (disclosure section drafted; final call theirs), Gao initial TODO, arXiv submission (they said post immediately after restructure), SBS comment.
+
 ## State / next
 - Just addressed user's 3 review points (exact membership; is_generic instead of assume(n!=1); Groebner certificate).
 - BLOCKER (trivial): test_conjecture.py line 62 uses fiber_certificate without importing it — fix import, then run full suite.

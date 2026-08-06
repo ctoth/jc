@@ -6,203 +6,255 @@
 \newcommand{\F}{\mathbb{F}}
 \newcommand{\A}{\mathbb{A}}
 
-\title[A second characteristic-2 counterexample, by SAT search]{A second
-counterexample to the separable Jacobian conjecture in
-characteristic~2, found by SAT search}
+\title[Parity obstruction and SAT search in characteristic 2]{A parity
+obstruction and a SAT search for characteristic-2 Jacobian
+counterexamples}
 \author{Christopher Toth}
-% Computational collaboration: Claude Fable 5 (Anthropic). Adjust
-% authorship/acknowledgment to taste before submission.
+% Authorship/acknowledgment decision: see the AI contribution
+% disclosure section; adjust the author line to taste before submission.
 \date{August 2026}
 
 \begin{document}
 
 \begin{abstract}
-Huq-Kuruvilla recently gave an explicit polynomial endomorphism of
-$\A^3$ over a field of characteristic $2$ with Jacobian determinant $1$
-and function-field degree $3$ that is not injective, refuting
-Adjamagbo's separable Jacobian conjecture in characteristic $2$
-\cite{hk}. We present a second, independently discovered counterexample
-with the same invariants, found by compiling the unit-Jacobian condition
-over unknown $\F_2$ coefficients to CNF and enumerating solutions with a
-SAT solver over a family mirroring the mod-$2$ monomial supports of the
-Alp\"oge--Fable characteristic-$0$ counterexample. We supply a Lean~4
-kernel certificate of the determinant identity and the witness collision
-(no axioms, no \texttt{sorry}, no imports), a scheme-theoretic fiber
-certificate showing the collision is the entire fiber, and computational
-evidence for a parity phenomenon: in exhaustively classified strata of
-identity-plus-homogeneous form, every unit-Jacobian map over $\F_2$ has
-generic degree $1$ or even, so counterexamples appear to require leaving
-that normal form.
+Adjamagbo's separable Jacobian conjecture is now known to fail in
+characteristic~$2$: in dimension three by Huq-Kuruvilla (July 23, 2026)
+and in dimension two by Mondello (July 29, 2026). We report two
+findings about the \emph{landscape} of such counterexamples. First, a
+parity obstruction in normal form: in exhaustively classified strata of
+identity-plus-homogeneous maps over $\F_2$ --- all $262{,}144$ maps with
+quadratic higher part in dimension $3$, all $16{,}384$ plane maps of
+degree $\le 3$, and (nearly complete) all $10{,}144$ unit-Jacobian maps
+of the $16.7$-million-map cubic-homogeneous stratum --- every map with
+$\det JF = 1$ has generic degree $1$ or even, so no counterexample of
+odd degree exists in these strata, although general maps (the known
+counterexamples included) violate the pattern. If this parity law holds
+for identity-plus-$H$ form in general, no characteristic-$2$ analogue of
+the Bass--Connell--Wright reduction can preserve counterexamples.
+Second, a search method: compiling $\det JF = 1$ over unknown $\F_2$
+coefficients into CNF (algebraic normal form plus Tseitin encoding) and
+enumerating all solutions with a SAT solver. Transferring the monomial
+supports of the Alp\"oge--Fable characteristic-$0$ counterexample mod
+$2$ proved decisive: the support-mirrored $2^{58}$-map family produced a
+new degree-$3$ counterexample within $3{,}000$ enumerated unit-Jacobian
+maps, while a generic low-degree $z$-linear family of $2^{45}$ maps
+produced over two million unit-Jacobian maps and no counterexample. The
+resulting map --- target-shear-equivalent to
+$(z + xy(1{+}y{+}xy)(1{+}xz),\, y(1{+}xy),\, x(1{+}xz))$ --- agrees with
+Huq-Kuruvilla's on every invariant we computed yet is provably not
+equivalent to it via short words in affine maps and elementary monomial
+shears; a Lean~4 kernel certificate (no axioms, no \texttt{sorry})
+verifies its determinant identity and witness collision.
 \end{abstract}
 
 \maketitle
 
-\section{Statement}
+\section{Introduction and timeline}
 
 The Jacobian conjecture of Keller asserts that a polynomial map
 $F\colon\A^n \to \A^n$ over a field of characteristic $0$ with
-$\det JF \in k^\times$ is invertible; it was disproved in dimension $3$
-by Alp\"oge and Fable in July 2026 \cite{alpoge,sbs,tao}, with
-extensions to all dimensions greater than two in \cite{dims}. In
+$\det JF \in k^\times$ is invertible. It was disproved in dimension~$3$
+in July 2026 by Alp\"oge and Fable \cite{alpoge,sbs,tao}, with
+extensions to all dimensions greater than two \cite{dims}. In
 characteristic $p$ the naive statement fails trivially
-($x \mapsto x - x^p$), and the standard repair, due to Adjamagbo
-\cite{adjamagbo}, adds the hypothesis that $p$ does not divide the
-degree $[k(x_1,\dots,x_n) : k(F_1,\dots,F_n)]$. Reduction of the
+($x \mapsto x - x^p$); the standard repair, due to Adjamagbo
+\cite{adjamagbo}, adds the hypothesis that $p$ does not divide
+$[k(x_1,\dots,x_n) : k(F_1,\dots,F_n)]$. Reduction of the
 Alp\"oge--Fable map modulo primes $p \equiv 1 \pmod 4$ refutes this
-\emph{separable Jacobian conjecture} in characteristic $p \ge 5$; its
-determinant $-2$ vanishes mod $2$. The characteristic-$2$ case was
-posed in the discussion of \cite{sbs} and settled in the negative by
-Huq-Kuruvilla on July 23, 2026 \cite{hk}, via the map
-$(x + x^2y,\; y + xz + x^2yz,\; z + x^2z^2)$. The present note records
-a second example, found independently by the search described in
-Section~2 (we learned of \cite{hk} after the fact), together with
-verification artifacts of possibly independent interest.
+\emph{separable Jacobian conjecture} for $p \ge 5$; its determinant
+$-2$ vanishes mod $2$, leaving characteristic $2$ open --- briefly. On
+July 23, Huq-Kuruvilla gave an explicit three-variable counterexample
+\cite{hk}; on July 29, Mondello gave a \emph{plane} counterexample
+derived from a coordinate permutation of that construction, with a
+Lean~4 formalization \cite{mondello}. We have verified both maps
+computationally with the tooling of this paper (unit determinant,
+generic degree $3$, and the stated collisions).
 
-\begin{theorem}
-Over any field $k$ of characteristic $2$, let $F = (F_1,F_2,F_3)\colon
-\A^3 \to \A^3$ be
-\begin{align*}
-F_1 &= z + xy + xy^2 + x^2y^2 + x^2yz + x^2y^2z + x^3y^2z,\\
-F_2 &= y + xy^2 \;=\; y(1+xy),\\
-F_3 &= x + y + xy^2 + x^2z.
-\end{align*}
-Then $\det JF = 1$ identically, the generic degree
-$[k(x,y,z):k(F_1,F_2,F_3)]$ equals $3$, and $F$ is not injective:
-\[
-F(0,0,1) \;=\; F(1,0,1) \;=\; F(1,1,1) \;=\; (1,0,0).
-\]
+This note contributes to the emerging landscape rather than to the
+existence question: a parity obstruction suggesting \emph{where
+counterexamples cannot live} (Section~2), a SAT-based search method
+with a sharp positive/negative contrast showing \emph{how to find them}
+(Section~3), a new example with unusual properties relative to
+Huq-Kuruvilla's (Sections~4--5), and verification artifacts.
+
+\section{The parity obstruction}
+
+Call a polynomial self-map of $\A^n_{\F_2}$ of \emph{identity-plus-$H$
+form} if $F = \mathrm{id} + H$ with every monomial of $H$ of degree
+$\ge 2$ --- the shape of the cubic-homogeneous Bass--Connell--Wright
+normal form \cite{bcw} (we claim no characteristic-$2$ reduction
+theorem).
+
+\begin{theorem}[exhaustive classifications]
+\label{thm:parity}
+Over $\F_2$:
+\begin{enumerate}
+\item Of the $262{,}144$ maps of $\A^3$ with $H$ quadratic, exactly
+$4096$ have $\det JF = 1$; their generic degrees are
+$1$ ($176$), $2$ ($728$), $4$ ($1176$), $6$ ($672$), $8$ ($1344$).
+\item Of the $16{,}384$ maps of $\A^2$ with $H$ spanned by monomials of
+degree $2$ and $3$, exactly $160$ have $\det JF = 1$; their generic
+degrees are $1$ ($10$), $2$ ($54$), $4$ ($48$), $6$ ($48$).
+\end{enumerate}
+In particular no map in either stratum has odd generic degree $\ge 3$.
 \end{theorem}
 
-Composing with the elementary target shear $(a,b,c) \mapsto (a,b,c+b)$
-puts $F$ in the unit-product normal form
+Two slices admit proofs rather than enumeration. In dimension $1$,
+$f' = 1$ forces $f = x + g(x^2)$, of degree $1$ or even. In the plane
+quadratic-only stratum, characteristic $2$ kills every square's
+derivative, so $\det JF = 1 + b y + e x$ where $b, e$ are the
+$xy$-coefficients: a unit iff both vanish, leaving exactly the
+Frobenius-affine maps $v \mapsto v + M v^{(2)}$ --- additive group
+homomorphisms whose generic degree is their kernel size, a power of
+$2$. In the three-dimensional quadratic stratum the determinant
+conditions solve completely: the $4096$ maps are exactly
+$F = \mathrm{id} + \bigl(d(y{+}ex)(z{+}fx),\; e(x{+}dy)(z{+}fy),\;
+f(x{+}dz)(y{+}ez)\bigr) + (\text{Frobenius part})$ for
+$(d,e,f) \in \F_2^3$, i.e.\ $8 \times 2^9$.
+
+A third, much larger stratum is nearly complete at the time of writing:
+$\det JF = 1$ for cubic-homogeneous $H$ on $\A^3$ forces the three
+graded pieces $e_1 = e_2 = e_3 = 0$ separately; the $e_1$-kernel
+contains $16{,}777{,}216$ maps, of which $10{,}144$ have unit Jacobian,
+and $9{,}813$ of these are exactly classified so far with degrees in
+$\{1, 2, 4, 6, 10\}$ --- again no odd degree $\ge 3$; the remainder are
+maps whose function-field Gr\"obner bases are computationally hard and
+are being finished with permuted-order methods. The final histogram
+will appear in the repository \cite{repo} and a revision.
+
+\begin{quote}
+\textbf{Question (parity).} Does every map of identity-plus-$H$ form
+over a field of characteristic $2$ with $\det JF = 1$ have generic
+degree $1$ or even?
+\end{quote}
+
+The known counterexamples \cite{hk,mondello}, and ours below, all have
+odd degree $3$ and all live \emph{outside} identity-plus-$H$ form. If
+the answer to the question is yes, then no characteristic-$2$ analogue
+of the Bass--Connell--Wright reduction --- which in characteristic $0$
+transports any counterexample into cubic-homogeneous
+identity-plus-$H$ form in more variables --- can preserve
+counterexamples, and the obstruction would be worth locating precisely
+in the reduction (compare \cite{vde} for where characteristic $0$
+enters). Either resolution seems interesting; $4 \times 10^5$ random
+identity-plus-$H$ samples beyond the exhaustive strata also satisfy
+parity.
+
+\section{The SAT search}
+
+The condition $\det JF = 1$, for $F$ with \emph{unknown} $\F_2$
+coefficients on fixed monomial supports, is a system of Boolean
+equations: each coefficient of $\det JF - 1$ is an XOR of ANDs of the
+unknown bits (algebraic normal form). Tseitin encoding turns the
+system into CNF; CaDiCaL then \emph{enumerates all} unit-Jacobian
+members of a family under blocking clauses. Two refinements matter:
+bits appearing in no determinant condition (pure Frobenius directions,
+e.g.\ $x^2$-coefficients of the non-$z$ parts) are pinned to zero in
+the solver and swept combinatorially afterwards, a $64$-fold saving;
+and enumerated maps are triaged by exhaustive fiber censuses over
+$\F_4$ and $\F_8$ --- a map earns an exact (function-field Gr\"obner)
+degree computation only if its $\F_8$ census shows fiber sizes in
+$\{1,3\}$ exclusively, the signature a separable degree-$3$ map must
+show and wild maps essentially never do.
+
+The search heuristic that worked is \emph{monomial support transfer}:
+take the supports of the characteristic-$0$ counterexample's components
+mod $2$, allow all $\F_2$ coefficients on those supports (plus small
+neighborhoods), and let SAT enumerate. The contrast is sharp:
+
+\begin{itemize}
+\item Support-mirrored $z$-linear family ($2^{58}$ maps): the
+counterexample of Section~4 appeared within the first $3{,}000$
+enumerated unit-Jacobian maps ($6$ census-tame maps in the first
+$26{,}000$, all variants of one base map).
+\item Generic low-degree $z$-linear family ($2^{45}$ maps,
+$P,R,T$ of degree $\le 2$, $Q,S,U$ of degree $\le 3$): over
+$2.1$ million unit-Jacobian maps enumerated, \emph{zero} passed the
+census sieve.
+\end{itemize}
+
+The structure of the characteristic-$0$ example, not mere
+$z$-linearity, carried the information.
+
+\section{The witness map}
+
+\begin{theorem}
+Over any field $k$ of characteristic $2$, the map
+\begin{align*}
+F_1 &= z + xy + xy^2 + x^2y^2 + x^2yz + x^2y^2z + x^3y^2z,\\
+F_2 &= y + xy^2,\\
+F_3 &= x + y + xy^2 + x^2z
+\end{align*}
+satisfies $\det JF = 1$ identically, has generic degree
+$[k(x,y,z):k(F)] = 3$, and is not injective:
+$F(0,0,1) = F(1,0,1) = F(1,1,1) = (1,0,0)$.
+\end{theorem}
+
+Degree $3$ forces separability (the inseparable degree is a power of
+$2$ dividing the total degree), so Adjamagbo's hypothesis holds. We
+make no claim about tame ramification at valuations at infinity: $F$ is
+a nonproper generically \'etale map, not a finite covering. Composing
+with the target shear $(a,b,c) \mapsto (a,b,c+b)$ yields the normal
+form
 \[
 \bigl(\, z + xy\,(1+y+xy)(1+xz),\;\; y\,(1+xy),\;\; x\,(1+xz) \,\bigr),
 \]
-every component built from the same $(1+\cdot)$-unit grammar as the
-characteristic-$0$ counterexample; Huq-Kuruvilla's map reads
-$(x(1+xy),\; y+xz(1+xy),\; z(1+x^2z))$ in the same grammar. Whether the
-two maps are equivalent under composition with automorphisms is open.
-We attempted to distinguish them and failed on every invariant tried:
-their fiber-size censuses agree exactly over
-$\F_4, \F_8, \F_{16}, \F_{32}$ (both maps have $S_3$ monodromy, with
-split-fiber fractions approaching the Chebotarev value $1/6$, so
-censuses are likely unable to separate any two such maps), and the
+visibly in the $(1+\cdot)$-unit grammar of the characteristic-$0$
+construction.
+
+Checks: on $\F_2$-points $a^k = a$, so $F$ collapses to
+$(z+xy+xyz,\, y+xy,\, x+y+xy+xz)$ and the collision is a hand
+computation. The determinant identity and the collision are certified
+by a Lean~4 kernel certificate (Lean core only: no imports, no axioms,
+no \texttt{sorry}; ancillary file \texttt{JcChar2.lean}); a collision
+of rational points persists over every extension. The degree is the
+staircase count of a Gr\"obner basis over the function field
+$\F_2(A,B,C)$, corroborated (not independently proved) by exhaustive
+censuses over $\F_8$--$\F_{64}$ with every fiber of size $1$ or $3$,
+and by the $x$-eliminant specialization at $(0,1,0)$ whose non-artifact
+factor is the irreducible separable cubic $x^3+x+1$. The fiber over
+$(1,0,0)$ has Gr\"obner basis $\{x^2{+}x,\, xy{+}y,\, y^2{+}y,\,
+z{+}1\}$: the geometric fiber has length $3$ and is the disjoint union
+of the three claimed reduced rational points.
+
+\section{Equivalence resistance}
+
+Is this map equivalent to Huq-Kuruvilla's
+$(x + x^2y,\, y + xz + x^2yz,\, z + x^2z^2)$ under composition with
+automorphisms? Every invariant we computed agrees: fiber-size censuses
+are identical over $\F_4, \F_8, \F_{16}, \F_{32}$ (both maps have $S_3$
+monodromy with split-fiber fraction approaching the Chebotarev value
+$1/6$, so censuses likely cannot separate any two such maps); the
 stratification of targets by \emph{geometric} fiber size --- computed
 per rational target by Gr\"obner staircase after adjoining a primitive
-element --- also agrees exactly over $\F_2, \F_4, \F_8$: for both maps
-the fiber-drop locus has precisely $q^2$ rational points, of which
-$q-1$ have empty fiber and the rest singleton fibers. These agreements
-are consistent with equivalence --- yet an explicit search shows the
-maps are \emph{not} equivalent via low-complexity automorphisms: writing
-$G$ for the set of all $1344$ invertible affine maps of $\A^3$ over
-$\F_2$ together with all $27$ elementary monomial shears
-$x_i \mapsto x_i + m$ ($m$ a monomial of degree $\le 3$ in the other
-two variables), a complete meet-in-the-middle search verifies that no
-$\beta \circ H \circ \alpha$ with $\alpha, \beta$ words of length
-$\le 2$ over $G$ equals our normal form. The two maps thus agree on
-every numerical invariant we computed while resisting every
-low-complexity equivalence; whether a higher-complexity equivalence
-exists is open.
+element --- is identical over $\F_2, \F_4, \F_8$, and strikingly clean:
+for both maps the fiber-drop locus has exactly $q^2$ rational points,
+of which $q-1$ have empty fiber and the rest singletons. Yet writing
+$G$ for the $1344$ invertible affine maps of $\A^3$ over $\F_2$
+together with the $27$ elementary monomial shears
+$x_i \mapsto x_i + m$ ($\deg m \le 3$), a complete meet-in-the-middle
+search shows no $\beta \circ H \circ \alpha$ with $\alpha, \beta$ words
+of length $\le 2$ over $G$ equals our normal form. The two maps agree
+on everything we can measure while resisting every low-complexity
+equivalence; whether a higher-complexity equivalence exists is open,
+and the shared fine structure of the drop loci suggests both maps may
+be coordinate presentations of one geometric mechanism --- in
+characteristic $2$, where the projective-duality account of the
+characteristic-$0$ example \cite{sbs} degenerates, identifying that
+mechanism seems to us the interesting follow-up, now with three data
+points \cite{hk,mondello}.
 
-Since the extension degree is $3$ and the inseparable degree of a
-finite extension in characteristic $2$ is a power of $2$ dividing the
-total degree, the extension is separable and Adjamagbo's prime-to-$p$
-hypothesis holds. We make no claim about tame ramification at
-valuations at infinity: $F$ is a nonproper generically \'etale map, not
-a finite covering, and odd total degree alone does not imply tameness
-of every branch at infinity. (It is the unit Jacobian that rules out
-ramification at affine points; the classical wild failures such as
-$x \mapsto x + x^2$ are excluded here by the degree hypothesis, not by
-any ramification claim.)
+\section*{AI contribution disclosure}
 
-Every claim in the theorem is finite and checkable; we indicate the
-checks.
-
-\emph{The collision, by hand.} On $\F_2$-points $a^k = a$ for
-$k \ge 1$, so $F$ collapses to
-$(z + xy + xyz,\; y + xy,\; x + y + xy + xz)$; evaluating at the three
-points takes a minute.
-
-\emph{The determinant.} $\det JF$, expanded over $\F_2$, is $1$. This
-is verified in the repository \cite{repo} by three implementations,
-including a Lean~4 kernel certificate
-(\texttt{lean\_export/JcChar2.lean}: Lean core only, no imports, no
-axioms, no \texttt{sorry}, with an in-file polynomial algebra and
-formal derivative, all arithmetic decided by the kernel). The
-certificate also verifies the collision; a collision of rational points
-persists over every extension field.
-
-\emph{The degree.} A Gr\"obner basis of
-$(F_1 - A,\, F_2 - B,\, F_3 - C)$ over the function field
-$\F_2(A,B,C)$ has staircase of cardinality $3$; this is the proof.
-Corroboration (not independent proof, since points can escape to
-infinity under specialization): exhaustive fiber censuses over
-$\F_8, \F_{16}, \F_{32}, \F_{64}$ show every rational fiber has
-cardinality $1$ or $3$, jointly accounting for every point of the
-space; and the $x$-eliminant specialized at the target $(0,1,0)$ has
-non-artifact factor $x^3 + x + 1$, irreducible and separable over
-$\F_2$, witnessing a degree-$3$ part.
-
-\emph{The fiber is the collision.} Over the target $(1,0,0)$ the fiber
-ideal has Gr\"obner basis $\{x^2+x,\; xy+y,\; y^2+y,\; z+1\}$. The
-geometric fiber has length $3$ and is the disjoint union of the three
-reduced $\F_2$-rational points listed in the theorem: no multiplicity,
-no points in extension fields.
-
-\section{How the map was found}
-
-An investigation of unit-Jacobian maps over $\F_2$ in strata modeled on
-the cubic-homogeneous Bass--Connell--Wright normal form \cite{bcw}
-(identity plus homogeneous higher part; we do not claim a
-characteristic-$2$ reduction theorem) produced exhaustive
-classifications of two strata --- all $262{,}144$ maps with quadratic
-higher part in dimension $3$, and all $16{,}384$ plane maps with higher
-part of degree $\le 3$ --- in which \emph{every} unit-Jacobian map has
-generic degree $1$ or even. This suggested that counterexamples require
-leaving the identity-plus-$H$ shape, and the characteristic-$0$
-counterexample is $z$-linear, $F_i = P_i(x,y)\,z + Q_i(x,y)$, so the
-search moved there. The condition $\det JF = 1$ over \emph{unknown}
-$\F_2$ coefficients on fixed monomial supports is a system of
-XOR-of-AND (algebraic normal form) equations, hence a SAT instance.
-With CaDiCaL enumerating models under blocking clauses, every
-unit-Jacobian member of the $2^{58}$-map family whose supports mirror
-the mod-$2$ monomials of the Alp\"oge--Fable map was enumerated and
-sieved by fiber census for the pure $\{1,3\}$ signature; the map above
-surfaced within the first $3{,}000$ models. The identical sweep of a
-lower-degree $z$-linear family ($2^{45}$ maps; over $600{,}000$
-unit-Jacobian members enumerated) found nothing: the mirrored support
-structure mattered. We have not determined whether the present map is
-equivalent to the map of \cite{hk} under composition with
-automorphisms; their monomial supports differ.
-
-\section{Remarks}
-
-\emph{A parity question.} Does every unit-Jacobian map of
-identity-plus-higher-degree form over $\F_2$ have generic degree $1$ or
-even? The exhaustive strata above, a $16.7$-million-map
-cubic-homogeneous computation in progress, and $4 \times 10^5$ random
-samples all say yes; the theorem says the answer is no for general
-maps. If the answer for identity-plus-$H$ form is yes, then no
-characteristic-$2$ analogue of the Bass--Connell--Wright reduction can
-carry counterexamples into that form --- worth comparing with
-\cite{vde} for where characteristic $0$ enters the classical
-reduction. Either resolution would be interesting.
-
-\emph{The geometric mechanism.} The known geometric account of the
-characteristic-$0$ counterexample runs through projective duality
-\cite{sbs}. Characteristic $2$ is exactly where that story degenerates:
-strange conics, possibly inseparable Gauss maps, failure of biduality.
-Whether the present map (or that of \cite{hk}) runs a transported
-version of the same mechanism or something genuinely different is, we
-think, the interesting follow-up. The component $F_2 = y(1+xy)$
-visibly echoes the unit structure of the original's second component,
-but the search re-chose every coefficient, so this is suggestive, not
-established.
-
-\emph{Reproducibility.} All computations, the SAT machinery, the test
-suite (both Lean-kernel certificates gated by corrupted-certificate
-negative controls), and the scripts that found and verified the map are
-at \cite{repo}.
+The computational search, the verification programming, the Lean
+certificates, and the initial drafting of this note were carried out by
+Claude Fable~5 (Anthropic) operating the repository \cite{repo} in an
+agentic session; C.~Toth directed the investigation, set the
+verification requirements, supplied external review, and is responsible
+for the final text. All theorem-level claims rest on machine-checkable
+artifacts (a pytest suite including two Lean-kernel certificates gated
+by corrupted-certificate negative controls) rather than on either
+author's authority.
 
 \begin{thebibliography}{9}
 
@@ -212,6 +264,10 @@ Jacobian conjecture, July 19--20, 2026.
 \bibitem{hk} I.~Huq-Kuruvilla, \emph{An explicit characteristic-$2$
 counterexample to the separable Jacobian conjecture},
 arXiv:2607.20968, July 23, 2026.
+
+\bibitem{mondello} R.~Mondello, \emph{A dimension-two counterexample
+to the separable Jacobian conjecture in characteristic two},
+arXiv:2608.02634, July 29, 2026.
 
 \bibitem{sbs} D.~E.~Speyer, \emph{The new counterexample to the Jacobian
 conjecture}, Secret Blogging Seminar, July 20, 2026,

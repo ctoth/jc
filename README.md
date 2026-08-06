@@ -1,13 +1,15 @@
 # jc — the Jacobian conjecture, disproved by property-based testing — and a second characteristic-2 counterexample, found by SAT search
 
-**Headline (August 2026, this repository):** a **second counterexample to
-the separable Jacobian conjecture in characteristic 2**, discovered
-independently by SAT search. Priority for the theorem itself belongs to
-**Irit Huq-Kuruvilla** ([arXiv:2607.20968](https://arxiv.org/abs/2607.20968),
-July 23, 2026), whose simpler map (x+x²y, y+xz+x²yz, z+x²z²) settled the
-question posed in the Alpöge–Fable announcement thread — we learned of that
-paper only after our search succeeded, and we have verified their map with
-our own tooling. Our contributions: a new, structurally different explicit
+**Headline (August 2026, this repository):** a **parity obstruction and a
+SAT search method for characteristic-2 Jacobian counterexamples**, with a
+new explicit counterexample as the witness. Priority for the existence
+theorem belongs to **Irit Huq-Kuruvilla**
+([arXiv:2607.20968](https://arxiv.org/abs/2607.20968), July 23, 2026,
+dimension 3) and **Romy Mondello**
+([arXiv:2608.02634](https://arxiv.org/abs/2608.02634), July 29, 2026,
+dimension 2, Lean-formalized) — we learned of these after our search
+succeeded, and we have verified both maps with our own tooling (det J = 1,
+generic degree 3, stated collisions). Our contributions: a new, structurally different explicit
 map; the SAT-over-monomial-supports search methodology; a Lean-kernel
 certificate; a scheme-theoretic whole-fiber certificate; and exhaustive
 stratum classifications exposing a parity phenomenon. Our map, found by
