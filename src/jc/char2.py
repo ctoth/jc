@@ -172,64 +172,49 @@ def tame_score(census):
 # verdicts therefore come from elimination over GF(2), not from counting.
 
 
+def generic_degree(comps):
+    """The exact generic degree of the map over F_2-bar: the dimension of
+    GF(2)(A,B,C)[x,y,z] / (F - (A,B,C)) computed from the Groebner
+    staircase over the function field of the target.
+
+    For a unit-Jacobian (etale) map this equals the generic fiber
+    cardinality with no multiplicity: odd >= 3 means tame non-injective —
+    the char-2 unicorn — while even means wild. Returns None if the
+    generic fiber is not finite (the map is not dominant-with-finite-fibers).
+    """
+    import sympy as sp
+
+    x, y, z, A, B, C = sp.symbols("x y z A B C")
+    dom = sp.GF(2).frac_field(A, B, C)
+    f1, f2, f3 = (_to_expr(c) for c in comps)
+    # The domain MUST go to groebner itself: given Poly inputs and explicit
+    # gens it silently rebuilds them over QQ(A,B,C), i.e. characteristic 0,
+    # and every degree that differs between char 0 and char 2 comes out
+    # wrong (this produced 174 phantom "tame counterexamples" once).
+    basis = sp.groebner(
+        [f1 - A, f2 - B, f3 - C], x, y, z, order="grevlex", domain=dom
+    )
+    lead = [g.monoms(order="grevlex")[0] for g in basis.polys]
+    bound = []
+    for i in range(3):
+        powers = [e[i] for e in lead if all(v == 0 for j, v in enumerate(e) if j != i)]
+        if not powers:
+            return None
+        bound.append(min(powers))
+    return sum(
+        1
+        for i in range(bound[0])
+        for j in range(bound[1])
+        for k in range(bound[2])
+        if not any(li <= i and lj <= j and lk <= k for (li, lj, lk) in lead)
+    )
+
+
 def _to_expr(component):
     import sympy as sp
 
     x, y, z = sp.symbols("x y z")
     return sp.Add(*(x**i * y**j * z**k for (i, j, k) in component))
-
-
-def eliminant_y(comps):
-    """The y-eliminant of F(v) = (A, B, C) over GF(2), symbolic target.
-
-    Computed by resultants (eliminate z from the last two equations, then
-    x via the first), so its y-degree bounds the generic fiber size; an
-    irreducible specialization certifies the bound is attained.
-    """
-    import sympy as sp
-
-    x, y, z, A, B, C = sp.symbols("x y z A B C")
-    gf = sp.GF(2)
-    f1, f2, f3 = (_to_expr(c) for c in comps)
-    r_z = sp.resultant(
-        sp.Poly(f2 - B, z, x, y, A, B, C, domain=gf),
-        sp.Poly(f3 - C, z, x, y, A, B, C, domain=gf),
-        z,
-    )
-    r_zx = sp.resultant(
-        sp.Poly(r_z.as_expr(), x, y, A, B, C, domain=gf),
-        sp.Poly(f1 - A, x, y, A, B, C, domain=gf),
-        x,
-    )
-    return r_zx.as_expr()
-
-
-def degree_verdict(comps, targets=((1, 0, 0), (1, 1, 0), (0, 1, 1), (1, 1, 1))):
-    """(max specialized eliminant degree, any_irreducible_at_max).
-
-    Even max degree with an irreducible witness means the cover is wild —
-    a census that looked tame was rational-point camouflage. Odd degree
-    >= 3 (necessarily separable in char 2) is unicorn territory: escalate
-    to exact methods before believing it.
-    """
-    import sympy as sp
-
-    y, A, B, C = sp.symbols("y A B C")
-    expr = eliminant_y(comps)
-    best, irreducible = 0, False
-    for a, b, c in targets:
-        u = sp.Poly(expr.subs({A: a, B: b, C: c}), y, modulus=2)
-        if u.degree() is None or u.degree() < 0 or u.is_zero:
-            continue
-        if u.degree() < best:
-            continue
-        factors = sp.factor_list(u.as_expr(), y, modulus=2)[1]
-        witness = len(factors) == 1 and factors[0][1] == 1
-        if u.degree() > best:
-            best, irreducible = u.degree(), witness
-        else:
-            irreducible = irreducible or witness
-    return best, irreducible
 
 
 def search(n_candidates, seed=0, screen_k=2, confirm_k=3):

@@ -5,8 +5,8 @@ from collections import Counter
 from jc.char2 import (
     GF2k,
     ONE,
-    degree_verdict,
     det_j,
+    generic_degree,
     fiber_census,
     is_injective_census,
     search,
@@ -103,7 +103,7 @@ def test_identity_map_census_is_injective():
 def test_census_camouflage_is_unmasked_by_the_symbolic_stage():
     """The first candidate this search ever flagged: rational fibers of
     sizes {1, 3} only over F_8 — tame-looking — yet a wild 8-to-1 cover.
-    The elimination stage must say so."""
+    The exact generic degree (Groebner over GF(2)(A,B,C)) must say so."""
     comps = (
         frozenset({(1, 0, 0), (2, 0, 0)}),
         frozenset({(0, 1, 0), (0, 2, 0), (1, 0, 2), (2, 0, 0)}),
@@ -113,19 +113,37 @@ def test_census_camouflage_is_unmasked_by_the_symbolic_stage():
     census = fiber_census(comps, GF2k(3))
     assert set(census) == {1, 3}
     assert tame_score(census) > 0  # the census alone is fooled
-    degree, certified = degree_verdict(comps)
-    assert degree == 8 and certified  # ... elimination is not
-    assert degree % 2 == 0  # wild: not a tame counterexample
+    assert generic_degree(comps) == 8  # ... the function-field count is not
 
 
-def test_degree_verdict_on_artin_schreier():
+def test_generic_degree_is_char_2_not_char_0():
+    """F = (x + y^2, y + xz + xy, z + xz + xy) has det J = 1 and generic
+    degree 3 in characteristic 0 — but in char 2 the cross terms of the
+    last two components cancel (F2 + F3 = y + z), reducing the fiber to a
+    quadratic in x: degree 2, wild. A tool that leaks characteristic 0
+    reports 3 and hallucinates a tame counterexample here."""
     comps = (
+        frozenset({(1, 0, 0), (0, 2, 0)}),
+        frozenset({(0, 1, 0), (1, 0, 1), (1, 1, 0)}),
+        frozenset({(0, 0, 1), (1, 0, 1), (1, 1, 0)}),
+    )
+    assert det_j(comps) == ONE
+    assert generic_degree(comps) == 2
+
+
+def test_generic_degree_on_known_maps():
+    a_s = (
         frozenset({(2, 0, 0), (1, 0, 0)}),
         frozenset({(0, 1, 0)}),
         frozenset({(0, 0, 1)}),
     )
-    degree, _certified = degree_verdict(comps)
-    assert degree == 2  # even: wild, as the classic example must be
+    assert generic_degree(a_s) == 2  # wild, as the classic example must be
+    identity = (
+        frozenset({(1, 0, 0)}),
+        frozenset({(0, 1, 0)}),
+        frozenset({(0, 0, 1)}),
+    )
+    assert generic_degree(identity) == 1
 
 
 def test_search_runs_and_reports():

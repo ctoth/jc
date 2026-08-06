@@ -43,6 +43,14 @@
 - sympy gotchas: modulus= gives symmetric reps (-2 not 3); multivariate factor over GF(p) NotImplemented (specialize→univariate); resultant chains inflate degree by multiplicities (spurious x⁹/-C factors char-0; here 8 was genuine, certified via irreducible specialization).
 - Suite: 28 passed + 1 xfailed. README updated. Next: commit rung 3. n=2 left alone per user.
 
+## Goal-mode: breakthrough hunt (/goal active: don't stop until our own breakthrough)
+- Defined breakthrough: exhaustive certified strata theorems in char 2 (or actual tame counterexample).
+- QUADRATIC STRATUM (2^18 = 262144 maps id+H, H quadratic): 4096 det-unit. Census screen: 0 tame survivors.
+- CUBIC-HOMOGENEOUS STRATUM: e1=0 linear reduction (xyz banned + 3 parity triples) → 16.7M enumerated in 371s: 10144 det-unit, 336 census-tame survivors, 624 injective-at-F4. Results: scratchpad/cubic_results.json.
+- TOOL SAGA (critical): (1) resultant-chain degree_verdict fragile (z-free assumptions, squaring artifacts) — REMOVED. (2) Built generic_degree: Groebner staircase over GF(2)(A,B,C) = exact generic degree. (3) TRAP FOUND: sp.groebner(Polys, gens, order=) IGNORES Poly domains — computed over QQ(A,B,C) (char 0!), yielding 174 phantom odd-degree 'unicorns' in quadratic stratum. Diagnosed via hand-check of (x+y², y+xz+xy, z+xz+xy): char-2 cancellation F2+F3=y+z ⇒ degree 2 (tool said 3 = char-0 degree). FIX: pass domain=GF(2).frac_field(A,B,C) directly to sp.groebner(...). Regression test added (test_generic_degree_is_char_2_not_char_0).
+- Corrected quadratic classification running (bf3gypfxc → quadratic_exact2.json): so far ONLY even degrees + degree-1 automorphisms. Zero unicorns at 1280/4096.
+- NEXT: finish quadratic → run classify_cubic_exact.py on cubic det-units (script ready in scratchpad) → if zero odd ≥3: two certified finite theorems = the breakthrough deliverable (plus tooling). Then bake theorems as tests + README + commit.
+
 ## State / next
 - Just addressed user's 3 review points (exact membership; is_generic instead of assume(n!=1); Groebner certificate).
 - BLOCKER (trivial): test_conjecture.py line 62 uses fiber_certificate without importing it — fix import, then run full suite.
