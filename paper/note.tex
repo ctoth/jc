@@ -143,8 +143,22 @@ contains $16{,}777{,}216$ maps, of which $10{,}144$ have unit Jacobian,
 and $9{,}813$ of these are exactly classified so far with degrees in
 $\{1, 2, 4, 6, 10\}$ --- again no odd degree $\ge 3$; the remainder are
 maps whose function-field Gr\"obner bases are computationally hard and
-are being finished with permuted-order methods. The final histogram
-will appear in the repository \cite{repo} and a revision.
+are being finished with permuted-order methods. A handful resist every
+generator order tried; the simplest, which we single out as a
+benchmark instance and call \emph{the holdout map},
+\[
+F_{\mathrm{hold}} = \bigl(\, x + y^3,\;\;
+y + x^3 + xy^2 + xz^2 + y^3 + y^2z,\;\;
+z + x^3 + x^2y + xy^2 + xz^2 + y^2z + yz^2 \,\bigr),
+\]
+has $\det JF = 1$, a rational $3$-point collision over $\F_2$ already
+(so it is far from injective), a size-$2$ rational fiber (so it is
+wild), and generic degree between $6$ (a specialized geometric fiber
+of six points) and $27$ (B\'ezout); its exact degree has so far
+defeated Buchberger's algorithm over $\F_2(A,B,C)$ under twelve
+order configurations. We know of no comparable public stress instance
+for function-field Gr\"obner bases in characteristic $2$. The final
+histogram will appear in the repository \cite{repo} and a revision.
 
 \begin{quote}
 \textbf{Question (parity).} Does every map of identity-plus-$H$ form
