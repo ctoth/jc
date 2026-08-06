@@ -27,6 +27,22 @@
 - STATUS: lean_export/Jc.lean generated (src/jc/lean_export.py) and COMPILES (LEAN_OK): jacobian_det_eq_neg_two, collision F(P1)=F(P2), P1_ne_P2, F_not_injective — all kernel decide, zero imports/axioms/sorry/native_decide.
 - Just wrote tests/test_lean.py (freshness, no-escape-hatches, compile, corrupt negative control). NOT YET RUN — that's the next step, then commit #2.
 
+## Rungs 2+3 (after commit d9bfb56 = Jelonek locus)
+- Jelonek: x-eliminant = -C*x^9*(D*x^3+(4-3BC)*x-2C), D = 27A^2C^2-18ABC+16A+B^3C-B^2. Fiber x-coords = roots of cubic G; escapes iff D=0 (x-dir) or C=0 (y-dir, LC_y=-2C^2). Rational on-locus family (B=0): (-16/(27c^2), 0, c). src/jc/jelonek.py + tests 6/6 green, committed.
+- Char p (src/jc/charp.py): det J = -2 => 0 mod 2 (map dies in char 2 — motivates search); unit mod odd p; Gaussian witness reduces mod p≡1(4) (i=sqrt(-1), e.g. p=5: collision verified). Census mod 5: 3-to-1 confirmed on F_5^3.
+- Char-2 finder (src/jc/char2.py): GF(2)[x,y,z] as frozensets of exponent triples (XOR arithmetic), exact det_j; GF(2^k) mul tables k<=4; fiber_census; tame_score (fibers {0,1,3} good, size 2/4 = wild AS signature penalized); random z-linear candidates (P(x,y)z+Q(x,y) per component, pools deg<=3 z-part / deg<=4 free part); search() = det filter -> F_4 screen -> F_8 confirm.
+- Key math note: naive separable JC in char 2 already false via Artin–Schreier x^2+x (Jacobian 1, separable, wild). Open target = TAME (degree coprime to 2, e.g. 3-to-1) unit-Jacobian noninjective map. AS test case correctly scored 0 (wild).
+- Test suite tests/test_charp.py: 10/11 passed; one fix just applied (sympy modulus= returns symmetric rep -2, compare % p). RERUN NEXT, then: bounded real search run (~50k candidates, timed), README update, commit rung 3.
+- No blockers.
+
+## Char-2 search results (rung 3 complete)
+- BCW-form sampling (identity+H): det-pass ~13% (vs 0% for generic z-linear).
+- 400k run: 51347 det-unit, 1 census-flagged: (x+x², y+y²+xz²+x², z+xz²+xy²), F8 census {1:128, 3:128} — PERFECT tame camouflage.
+- Unmasked: y-eliminant deg 8, IRREDUCIBLE at target (1,1,0) ⇒ genuine 8-to-1 wild cover (2 from AS x-part × 4 Bezout). Rational fibers only show {1,3}; 5 points/fiber hide in extensions. KEY LESSON: censuses cannot certify tameness; symbolic elimination stage (degree_verdict) is mandatory. Baked into char2.py + regression tests.
+- Ground truth scoring validated: Alpöge map mod 5/13 censuses show sizes {1,3} ONLY (no 2s) — size-2 penalty correct.
+- sympy gotchas: modulus= gives symmetric reps (-2 not 3); multivariate factor over GF(p) NotImplemented (specialize→univariate); resultant chains inflate degree by multiplicities (spurious x⁹/-C factors char-0; here 8 was genuine, certified via irreducible specialization).
+- Suite: 28 passed + 1 xfailed. README updated. Next: commit rung 3. n=2 left alone per user.
+
 ## State / next
 - Just addressed user's 3 review points (exact membership; is_generic instead of assume(n!=1); Groebner certificate).
 - BLOCKER (trivial): test_conjecture.py line 62 uses fiber_certificate without importing it — fix import, then run full suite.

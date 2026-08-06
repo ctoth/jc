@@ -53,6 +53,41 @@ gates freshness (file equals regeneration), compilation (via an elan-discovered
 Lean 4, skipped if absent), absence of escape hatches, and a negative control:
 a certificate with one perturbed coefficient must be rejected.
 
+## The non-properness locus, symbolically
+
+`src/jc/jelonek.py`: eliminating z (F is linear in it) and then y factors the
+x-eliminant over a *symbolic* target (A, B, C) as −C·x⁹·G(x) with
+
+    G(x) = D·x³ + (4 − 3BC)·x − 2C,
+    D = 27A²C² − 18ABC + 16A + B³C − B²
+
+so the fiber's x-coordinates are roots of the cubic G, and preimages escape
+to infinity exactly on {D = 0} (x-direction) or {C = 0} (y-direction; the
+y-eliminant's leading coefficient is −2C²). Tests check both directions
+against the fiber certificate over arbitrary rational targets and sample the
+rational locus family (−16/(27c²), 0, c).
+
+## Characteristic p, and a finder for characteristic 2
+
+det J = −2 vanishes mod 2 — the map is no candidate there — but stays a unit
+mod odd p, and for p ≡ 1 (mod 4) the Gaussian witness reduces: `jc.charp`
+verifies the collision over F₅ and F₁₃, and the F₅/F₁₃ censuses show fiber
+sizes {1, 3} exactly as a degree-3 étale cover should.
+
+`jc.char2` inverts the methodology from checker to *finder*: over F₂ the naive
+separable conjecture already dies to wild Artin–Schreier maps (x ↦ x + x²),
+so the open target is a **tame** (odd-degree) unit-Jacobian non-injective
+map. The pipeline: exact det J over GF(2) on sets-of-monomials arithmetic →
+exhaustive fiber censuses over F₄/F₈ → symbolic elimination verdict. Sampling
+in Bass–Connell–Wright form (identity + higher-degree terms) makes the det
+filter pass at ~13%. A 400k-candidate run produced exactly one census-tame
+candidate, (x + x², y + y² + xz² + x², z + xz² + xy²) — rational fibers of
+sizes {1, 3} only — which the elimination stage unmasked as a *wild 8-to-1
+cover* whose other five preimages hide in extension fields: rational-point
+statistics cannot certify tameness, only elimination can. No tame
+counterexample found so far; the harness and its negative controls are the
+deliverable.
+
 ```
 uv run pytest tests/ -v
 ```
