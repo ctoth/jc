@@ -1,26 +1,40 @@
-# jc — the Jacobian conjecture, disproved by property-based testing — and the characteristic-2 case, settled here
+# jc — the Jacobian conjecture, disproved by property-based testing — and a second characteristic-2 counterexample, found by SAT search
 
-**Headline result (August 2026, this repository):** the tame (Adjamagbo
-separable) Jacobian conjecture is **false in characteristic 2** — the one
-case the Alpöge–Fable counterexample cannot reach, and the case their
-announcement thread flagged as unexplored. The counterexample, found by
+**Headline (August 2026, this repository):** a **second counterexample to
+the separable Jacobian conjecture in characteristic 2**, discovered
+independently by SAT search. Priority for the theorem itself belongs to
+**Irit Huq-Kuruvilla** ([arXiv:2607.20968](https://arxiv.org/abs/2607.20968),
+July 23, 2026), whose simpler map (x+x²y, y+xz+x²yz, z+x²z²) settled the
+question posed in the Alpöge–Fable announcement thread — we learned of that
+paper only after our search succeeded, and we have verified their map with
+our own tooling. Our contributions: a new, structurally different explicit
+map; the SAT-over-monomial-supports search methodology; a Lean-kernel
+certificate; a scheme-theoretic whole-fiber certificate; and exhaustive
+stratum classifications exposing a parity phenomenon. Our map, found by
 SAT-sweeping unit-Jacobian conditions over a family mirroring the original
-map's structure mod 2, is:
+char-0 map's structure mod 2:
 
     F1 = z + xy + xy² + x²y² + x²yz + x²y²z + x³y²z
     F2 = y + xy²                        (= y(1+xy))
     F3 = x + y + xy² + x²z
 
-over F₂. Its Jacobian determinant is identically **1** (étale), its generic
-degree is **3** — odd, hence separable, hence *tame* — and it is not
-injective: the three rational points **(0,0,1), (1,0,1), (1,1,1)** all map
-to **(1,0,0)** (check it by hand: on 0/1 coordinates the map collapses to
-`(z+xy+xyz, y+xy, x+y+xy+xz)`). Fibers over F₈ through F₆₄ have sizes in
-{1, 3} only; the x-eliminant at target (0,1,0) carries the irreducible
-separable cubic x³+x+1. `lean_export/JcChar2.lean` is a Lean-kernel
-certificate of the determinant identity and the collision (no imports, no
-axioms, no `sorry`); `tests/test_unicorn.py` verifies everything else.
-Full account in [REPORT.md](REPORT.md).
+over F₂. Its Jacobian determinant is identically **1**, its generic degree
+is **3** — the inseparable degree of a finite extension in char 2 is a
+power of 2 dividing the total degree, so degree 3 forces separability and
+Adjamagbo's prime-to-p hypothesis — and it is not injective: the three
+rational points **(0,0,1), (1,0,1), (1,1,1)** all map to **(1,0,0)** (check
+by hand: on 0/1 coordinates the map collapses to
+`(z+xy+xyz, y+xy, x+y+xy+xz)`). The geometric fiber over (1,0,0) has
+length 3 and is the disjoint union of exactly those three reduced
+F₂-rational points (Gröbner basis {x²+x, xy+y, y²+y, z+1}). Fibers over F₈
+through F₆₄ have sizes in {1, 3} only, and the x-eliminant at target
+(0,1,0) carries the irreducible separable cubic x³+x+1 — corroboration; the
+function-field Gröbner staircase is the degree proof. Note F is a
+*nonproper generically étale map*, not a finite covering, and we make no
+tame-ramification claims at infinity. `lean_export/JcChar2.lean` is a
+Lean-kernel certificate of the determinant identity and the collision (no
+imports, no axioms, no `sorry`); `tests/test_unicorn.py` verifies
+everything else. Full account in [REPORT.md](REPORT.md).
 
 The Jacobian conjecture (Keller, 1939) asserted that a polynomial map
 F: ℂⁿ → ℂⁿ with nonzero constant Jacobian determinant is invertible. In July

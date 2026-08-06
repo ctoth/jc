@@ -2,10 +2,12 @@
 
 Adjamagbo's separable Jacobian conjecture asserted that a polynomial map
 in characteristic p with unit Jacobian and p not dividing the extension
-degree is invertible. Alpöge–Fable killed it in odd characteristic; the
-map here kills it in characteristic 2. It also refutes this project's
-own parity conjecture — the conjecture's honest job was to aim the
-search at the family containing its refutation.
+degree is invertible. Alpöge–Fable killed it in odd characteristic;
+Huq-Kuruvilla killed it in characteristic 2 (arXiv:2607.20968, July 23,
+2026). The map here is a second, independently found characteristic-2
+counterexample. It also refutes this project's own parity conjecture —
+whose honest job was to aim the search at the family containing its
+refutation.
 """
 
 from collections import Counter
@@ -99,6 +101,33 @@ def test_witnesses_collide_by_pure_python_arithmetic():
         )
 
     assert {F(*w) for w in WITNESSES} == {TARGET}
+
+
+def test_fiber_over_the_target_is_reduced_and_entirely_rational():
+    """The collision is the WHOLE fiber: over (1,0,0) the fiber ideal has
+    Groebner basis {x^2+x, xy+y, y^2+y, z+1} — quotient dimension 3 with
+    basis {1, x, y}, generators splitting into distinct linear factors
+    (radical, hence reduced) — so the three F_2-points realize the full
+    generic degree with no multiplicity and no extension-field stragglers."""
+    x, y, z = sp.symbols("x y z")
+    f1 = z + x*y + x*y**2 + x**2*y**2 + x**2*y*z + x**2*y**2*z + x**3*y**2*z
+    f2 = y + x*y**2
+    f3 = x + y + x*y**2 + x**2*z
+    basis = sp.groebner([f1 - 1, f2, f3], x, y, z, modulus=2, order="grevlex")
+    exprs = {sp.Poly(g, x, y, z, modulus=2) for g in basis.exprs}
+    expected = {
+        sp.Poly(x**2 + x, x, y, z, modulus=2),
+        sp.Poly(x * y + y, x, y, z, modulus=2),
+        sp.Poly(y**2 + y, x, y, z, modulus=2),
+        sp.Poly(z + 1, x, y, z, modulus=2),
+    }
+    assert exprs == expected
+    sols = [
+        pt
+        for pt in ((a, b, c) for a in (0, 1) for b in (0, 1) for c in (0, 1))
+        if evaluate_f2(UNICORN, pt) == TARGET
+    ]
+    assert tuple(sols) == WITNESSES
 
 
 def test_unicorn_refutes_the_parity_conjecture():

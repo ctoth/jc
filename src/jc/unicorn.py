@@ -5,17 +5,20 @@
     F3 = x + y + xy^2 + x^2z
 
 over F_2. Its Jacobian determinant is identically 1 (the map is etale),
-its generic degree is 3 — odd, hence separable, hence *tame* — and it is
-not injective: the three F_2-rational points (0,0,1), (1,0,1), (1,1,1)
-all map to (1,0,0). This refutes Adjamagbo's separable Jacobian
-conjecture in characteristic 2, the case left open by the Alpöge–Fable
-counterexample (whose det J = -2 vanishes mod 2), and simultaneously
-refutes this project's own parity conjecture — which earned its keep by
+its generic degree is 3 — odd, so the inseparable degree (a power of 2
+dividing 3) is 1: the extension is separable — and it is not injective:
+the three F_2-rational points (0,0,1), (1,0,1), (1,1,1) all map to
+(1,0,0), and they are the entire (reduced) fiber. A second
+counterexample to Adjamagbo's separable Jacobian conjecture in
+characteristic 2: the theorem is due to Huq-Kuruvilla (arXiv:2607.20968,
+July 23, 2026, via the simpler map (x+x^2y, y+xz+x^2yz, z+x^2z^2));
+this map was found independently, before we learned of that paper. It
+also refutes this project's parity conjecture — which earned its keep by
 pointing the search at the z-linear Sym-mirror family where this map
 lives. Found by SAT-sweeping det J = 1 over that family and sieving
-fiber censuses; verified independently by sympy determinants, brute
-censuses over F_8..F_64 (fiber sizes always in {1, 3}), function-field
-Groebner degree, and an irreducible separable cubic eliminant
+fiber censuses; verified by sympy determinants, brute censuses over
+F_8..F_64 (fiber sizes always in {1, 3}), function-field Groebner degree
+(the proof), and a corroborating irreducible separable cubic eliminant
 specialization (x^3 + x + 1 at target (0,1,0)).
 """
 

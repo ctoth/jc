@@ -1,23 +1,44 @@
-# The tame Jacobian conjecture is false in characteristic 2
+# A second counterexample to the separable Jacobian conjecture in characteristic 2
 
 *jc project report, August 2026.*
 
+**Priority note.** The theorem that the separable Jacobian conjecture is
+false in characteristic 2 is due to Irit Huq-Kuruvilla
+([arXiv:2607.20968](https://arxiv.org/abs/2607.20968), submitted July 23,
+2026), via the simpler map (x+x²y, y+xz+x²yz, z+x²z²). Our search ran
+independently and we learned of that paper afterwards; we have verified
+their map with our own tooling (det J = 1, generic degree 3). What follows
+is a second, structurally different explicit counterexample together with
+the methodology and certificates.
+
 ## The result
 
-**Theorem.** Over F₂ (hence over every field of characteristic 2), the map
+**Theorem (second example; the statement is Huq-Kuruvilla's).** Over F₂
+(hence over every field of characteristic 2), the map
 
     F1 = z + xy + xy² + x²y² + x²yz + x²y²z + x³y²z
     F2 = y + xy²                        (= y(1+xy))
     F3 = x + y + xy² + x²z
 
-has Jacobian determinant identically 1, generic degree 3 (odd, hence
-separable, hence tame), and is not injective: (0,0,1), (1,0,1) and (1,1,1)
-all map to (1,0,0). This refutes Adjamagbo's separable Jacobian conjecture
-in characteristic 2 — the case the Alpöge–Fable counterexample cannot reach
-(its det J = −2 vanishes mod 2) and the case their announcement thread
-posed as open.
+has Jacobian determinant identically 1, generic degree 3, and is not
+injective: (0,0,1), (1,0,1) and (1,1,1) all map to (1,0,0). The
+inseparable degree of a finite extension in characteristic 2 is a power of
+2 dividing the total degree, so degree 3 forces separability and
+Adjamagbo's prime-to-p hypothesis holds. We make no claim about tame
+ramification at valuations at infinity: F is a nonproper generically
+étale map, not a finite covering, and odd total degree alone does not
+imply tameness of every branch at infinity. (The unit Jacobian rules out
+ramification at affine points; the classical wild failures like
+x ↦ x + x² are excluded by the degree hypothesis, not by a ramification
+claim.)
 
-*Verification* (each check independent): det J = 1 by three separate
+**The collision is the whole fiber.** Over the target (1,0,0) the fiber
+ideal has Gröbner basis {x²+x, xy+y, y²+y, z+1}. The geometric fiber has
+length 3 and is the disjoint union of the three reduced F₂-rational points
+above — no multiplicity, no points in extension fields.
+
+*Verification* (the Gröbner staircase over the function field is the
+degree proof; the censuses and specializations corroborate): det J = 1 by three separate
 implementations, including a Lean-kernel certificate
 (`lean_export/JcChar2.lean`: no imports, no axioms, no `sorry`) that also
 certifies the three-point collision — and a collision of rational points
@@ -48,23 +69,37 @@ The Alpöge–Fable counterexample (July 2026) killed the Jacobian conjecture in
 characteristic 0 and, by reduction mod p ≡ 1 (mod 4), Adjamagbo's *separable
 Jacobian conjecture* in odd characteristic: its map has det J = −2 and is
 generically 3-to-1, and 3 is coprime to every odd p ≥ 5. Characteristic 2 is
-different — det J = −2 ≡ 0 — and the Secret Blogging Seminar thread asks
-whether anyone has looked there. A char-2 counterexample must be **tame**:
-generic degree odd (hence automatically separable) and ≥ 3, with det J = 1.
-The classic char-2 failures (Artin–Schreier maps like x ↦ x + x²) are wild —
-degree divisible by 2 — and do not qualify.
+different — det J = −2 ≡ 0 — and the Secret Blogging Seminar thread asked
+whether anyone had looked there (answered by Huq-Kuruvilla on July 23; see
+the priority note above). A char-2 counterexample must have generic degree
+odd and ≥ 3, with det J = 1 — odd degree forces inseparable degree 1, i.e.
+separability. The classic char-2 failures (Artin–Schreier maps like
+x ↦ x + x²) have degree divisible by 2 and do not qualify.
 
-## The parity conjecture (refuted — by the theorem above)
+## The BCW parity question
 
-**Parity Conjecture (this project, now refuted).** *Over a field of
-characteristic 2, every polynomial map Aⁿ → Aⁿ with det J = 1 has generic
-degree either 1 or even.*
+The counterexample has degree 3, so no global parity law holds. What
+survives is sharper and stranger:
 
-The counterexample above has degree 3: the conjecture is false in general.
-It remains true — exhaustively verified — in every Bass–Connell–Wright
-stratum tested below, which is exactly why the search moved to z-linear
-families. The refutation and the evidence are two halves of one story: the
-parity wall is real in BCW form and absent in the z-linear region.
+**Open question (BCW-form parity).** *Does every map of
+identity-plus-higher-degree form — the shape of the cubic-homogeneous
+Bass–Connell–Wright normal form, though we claim no characteristic-2
+reduction theorem — with det J = 1 in characteristic 2 have generic
+degree 1 or even?*
+
+Every stratum below answers yes, exhaustively. If the answer is yes in
+general, something is wrong with the characteristic-2 BCW reduction: in
+characteristic 0, BCW says any Jacobian counterexample transports into
+cubic-homogeneous identity-plus-H form (in more variables), so a char-2
+counterexample of degree 3 coexisting with an all-even BCW region means
+the reduction must lose the odd part — plausibly through divisions by 2
+or degree-doubling steps that break mod 2 (van den Essen's account of the
+reduction is the place to check exactly where characteristic 0 enters).
+Either resolution is interesting: a BCW-form odd-degree map (a second,
+structurally different counterexample), or a proof that char-2 BCW
+reduction is lossy, which would be a theorem about the reduction itself.
+This tension, not the histograms, is the mathematical content of the
+strata below; the histograms are the evidence that forced the question.
 
 ## Evidence
 
@@ -123,13 +158,14 @@ No odd degree ≥ 3 occurs.
 
 No odd degree ≥ 3 occurs.
 
-**Theorem 3 (3-dimensional cubic-homogeneous stratum, in progress).**
-det J = 1 forces e₁ = e₂ = e₃ = 0 separately; the e₁-kernel (xyz banned,
-three parity triples) holds 16,777,216 maps, of which 10,144 have unit
-Jacobian. Exact classification is running; at the time of writing ~4,000
-of 10,144 are classified with degrees {1, 2, 4, 6, 10} — no odd degree
-≥ 3 — consistent with the BCW parity pattern. Final histogram lands in
-the repository when the run completes.
+**Computation in progress (3-dimensional cubic-homogeneous stratum).**
+Not yet a theorem. det J = 1 forces e₁ = e₂ = e₃ = 0 separately; the
+e₁-kernel (xyz banned, three parity triples) holds 16,777,216 maps, of
+which 10,144 have unit Jacobian. Exact classification is running; at the
+time of writing ~4,000 of 10,144 are classified with degrees
+{1, 2, 4, 6, 10} — no odd degree ≥ 3 so far. The final histogram, and
+only then a theorem statement, lands in the repository when the run
+completes.
 
 ## Methodological findings
 
