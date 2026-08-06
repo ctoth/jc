@@ -51,6 +51,14 @@
 - Corrected quadratic classification running (bf3gypfxc → quadratic_exact2.json): so far ONLY even degrees + degree-1 automorphisms. Zero unicorns at 1280/4096.
 - NEXT: finish quadratic → run classify_cubic_exact.py on cubic det-units (script ready in scratchpad) → if zero odd ≥3: two certified finite theorems = the breakthrough deliverable (plus tooling). Then bake theorems as tests + README + commit.
 
+## Breakthrough status (goal mode)
+- THEOREM 1 (committed 4b7092c): quadratic 3D stratum, 262144 maps, 4096 det-unit, exact degrees {1:176, 2:728, 4:1176, 6:672, 8:1344} — zero odd ≥3. No tame counterexample.
+- THEOREM 2 (just computed, being baked into tests): plane stratum (x+H1,y+H2), H deg≤3, 16384 maps, 160 det-unit, {1:10, 2:54, 4:48, 6:48} — zero odd. src/jc/plane2.py added; tests/test_strata.py has sampled + slow-full layers (slow layer asserts exact histograms).
+- 1D: trivial proof (f'=1 ⇒ f = x+g(x²) ⇒ even degree or linear).
+- PARITY CONJECTURE (our formulation): char 2, det J = 1 ⇒ generic degree 1 or even. If true, Adjamagbo's tame/separable JC is VACUOUSLY true for p=2. Lit check (websearch): Adjamagbo's separable JC has hypothesis p ∤ degree; char-2 case flagged unexplored in SBS thread; no parity statement found → plausibly novel observation/conjecture.
+- IN FLIGHT: cubic-homogeneous 3D classification (task bv2npofv2 → cubic_exact.json): 10144 det-units at ~3/s ≈ 55min; so far all even. Will be THEOREM 3.
+- Current work: finish test_strata.py plane tests (Pyright noise on 'from jc import plane2' — likely stale venv index; verify by running pytest), then README/REPORT writeup + commit. Blocker: none; waiting on cubic task.
+
 ## State / next
 - Just addressed user's 3 review points (exact membership; is_generic instead of assume(n!=1); Groebner certificate).
 - BLOCKER (trivial): test_conjecture.py line 62 uses fiber_certificate without importing it — fix import, then run full suite.

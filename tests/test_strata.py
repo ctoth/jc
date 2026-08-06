@@ -71,6 +71,37 @@ def test_quadratic_stratum_full_classification():
     assert dict(hist) == {1: 176, 2: 728, 4: 1176, 6: 672, 8: 1344}
 
 
+def test_plane_stratum_sample_has_no_tame_map():
+    """Dimension-2 parity evidence, sampled. (The exhaustive run over all
+    16,384 plane maps with H of degree <= 3 found 160 unit-Jacobian maps
+    with histogram {1: 10, 2: 54, 4: 48, 6: 48} — all automorphisms or
+    wild; the slow test repeats it in full.)"""
+    from jc import plane2
+
+    units = plane2.det_unit_maps()
+    assert len(units) == 160
+    rng = random.Random(2026)
+    for f1, f2 in rng.sample(units, 12):
+        d = plane2.generic_degree(f1, f2)
+        assert d is not None
+        assert d == 1 or d % 2 == 0
+
+
+@pytest.mark.slow
+def test_plane_stratum_full_classification():
+    from collections import Counter
+
+    from jc import plane2
+
+    hist = Counter()
+    for f1, f2 in plane2.det_unit_maps():
+        d = plane2.generic_degree(f1, f2)
+        assert d is not None
+        assert d == 1 or d % 2 == 0, f"tame counterexample?! {(f1, f2)} degree {d}"
+        hist[d] += 1
+    assert dict(hist) == {1: 10, 2: 54, 4: 48, 6: 48}
+
+
 def test_census_screen_finds_no_tame_pattern_in_quadratic_stratum():
     f4 = GF2k(2)
     for comps in quadratic_det_units():
