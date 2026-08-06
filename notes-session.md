@@ -157,6 +157,15 @@
 - Cubic: 9,813/10,144 classified {1:400, 2:2158+, 4:3611, 6:3031, 10:613}, 331 deferred auto-cracking, map 4955 RESISTS all 6 orders (needs lex/bigger timeout later). Zero odd ≥3 throughout.
 - User-owned: author line (disclosure section drafted; final call theirs), Gao initial TODO, arXiv submission (they said post immediately after restructure), SBS comment.
 
+## Map 4955 reified + siege status
+- Map 4955 IS: F = (x + y³, y + x³ + xy² + xz² + y³ + y²z, z + x³ + x²y + xy² + xz² + y²z + yz²) — 17 monomials, id + cubic homogeneous H, det J = 1. The one map in 10,144 that resists all Gröbner attempts so far.
+- F₂-point behavior (computed): NOT injective even rationally — (0,0,1), (1,1,0), (1,1,1) all ↦ (0,0,1); (0,1,1),(1,0,0) ↦ (1,1,1). Rational fiber sizes {1,2,3} — the size-2 fiber is a wild signature (census screen rejected it as tame long ago; only its DEGREE is unknown).
+- Siege phase 1 (bounds): max geometric fiber over F₂ targets = 6; incl. F₄ targets still 6 ⇒ generic degree ≥ 6. Bezout ≤ 27. Parity expectation: even (all siblings are); 6 or 12 likely. Phase 2 (12 × 15-min Gröbner: 6 perms × {grevlex, lex}) running — task bclvym7zt.
+- Pre-posting fixes all committed/pushed (9e7c58f): S. Gao; Mondello provenance verified vs primary abstract ("coordinate-permuted form"); abstract = 2 exhaustive strata + cubic 9,813/10,144 agreeing; numbers pinned (hunts STOPPED: mirror 8,277 tame-sig/6.7M; generic 9.8M/zero); ulam.ai Alpöge manuscript cite; étale-kernel sentence; 3-witnesses observation promoted to intro ¶2.
+- NOTE: my broad Stop-Process kill of zlinear_hunt also killed hunt C (same script name) — acceptable: its 8,277-candidate JSONL is the artifact; phase-2 classification of those = future work.
+- Auto-crack loop on remaining ~330 cubic deferrals still running (bjyrpzfx1 — CHECK whether it stopped when workers finished; its loop condition watches OLD worker task IDs... it watches b8gewu3b5/b6amybjfn/bi32cbskn which ARE done ⇒ loop should have exited after final pass — VERIFY; if exited with deferrals remaining, relaunch crack_deferred once more).
+- User-owned: author line, arXiv submission, SBS comment.
+
 ## State / next
 - Just addressed user's 3 review points (exact membership; is_generic instead of assume(n!=1); Groebner certificate).
 - BLOCKER (trivial): test_conjecture.py line 62 uses fiber_certificate without importing it — fix import, then run full suite.
