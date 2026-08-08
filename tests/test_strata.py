@@ -9,8 +9,10 @@ slow test, a seeded sample runs by default.
 Theorem (cubic-homogeneous stratum). Among all 2^30 maps with Hi cubic
 homogeneous, det J = 1 forces e1 = e2 = e3 = 0; the e1-kernel (xyz
 banned, three parity triples) has 16,777,216 maps, of which 10,144 have
-det J = 1. The census and exact-degree layers found no tame
-counterexample (see notes in the repository).
+det J = 1. 10,124 are exactly classified — degrees 1 (400), 2 (2184),
+4 (3696), 6 (3172), 10 (672), no odd degree >= 3 — and the 20
+computationally unresolved maps (data/cubic_holdouts.json) all carry a
+size-2 rational fiber over F_4, excluding degree 3.
 """
 
 import itertools
@@ -190,6 +192,34 @@ def test_cubic_stratum_block_counts_and_parity_sample():
         d = generic_degree(comps)
         assert d is not None
         assert d == 1 or d % 2 == 0
+
+
+def test_cubic_holdout_benchmark_family_is_pinned():
+    """The 20 unresolved maps of the cubic stratum, published in
+    data/cubic_holdouts.json: each has det J = 1 and a size-2 rational
+    fiber over F_4 — which no etale degree-3 cover admits (its fibers
+    carry 0, 1, or 3 rational points) — so none is a degree-3
+    counterexample. The classified histogram accounts for the rest of
+    the stratum's 10,144 unit-Jacobian maps."""
+    import json
+    from pathlib import Path
+
+    data = json.loads(
+        (Path(__file__).parent.parent / "data" / "cubic_holdouts.json").read_text()
+    )
+    hist = {int(k): v for k, v in data["classified_histogram"].items()}
+    assert hist == {1: 400, 2: 2184, 4: 3696, 6: 3172, 10: 672}
+    assert sum(hist.values()) + len(data["holdouts"]) == 10_144
+    assert len(data["holdouts"]) == 20
+    f4 = GF2k(2)
+    for entry in data["holdouts"]:
+        comps = tuple(
+            frozenset(tuple(m) for m in comp) for comp in entry["components"]
+        )
+        assert det_j(comps) == ONE, entry["index"]
+        census = fiber_census(comps, f4)
+        assert census.get(2, 0) > 0, entry["index"]
+        assert {int(k): v for k, v in entry["census_F4"].items()} == dict(census)
 
 
 def test_census_screen_finds_no_tame_pattern_in_quadratic_stratum():

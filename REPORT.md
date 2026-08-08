@@ -158,14 +158,19 @@ No odd degree ≥ 3 occurs.
 
 No odd degree ≥ 3 occurs.
 
-**Computation in progress (3-dimensional cubic-homogeneous stratum).**
-Not yet a theorem. det J = 1 forces e₁ = e₂ = e₃ = 0 separately; the
+**Computation, 99.8% complete (3-dimensional cubic-homogeneous stratum).**
+Not a full theorem. det J = 1 forces e₁ = e₂ = e₃ = 0 separately; the
 e₁-kernel (xyz banned, three parity triples) holds 16,777,216 maps, of
-which 10,144 have unit Jacobian. Exact classification is running; at the
-time of writing ~4,000 of 10,144 are classified with degrees
-{1, 2, 4, 6, 10} — no odd degree ≥ 3 so far. The final histogram, and
-only then a theorem statement, lands in the repository when the run
-completes.
+which 10,144 have unit Jacobian. 10,124 are exactly classified:
+degree 1 (400), 2 (2,184), 4 (3,696), 6 (3,172), 10 (672) — no odd
+degree ≥ 3 anywhere. The remaining 20 maps defeated every method tried
+(all generator/monomial orders, monic-linear substitution, Rabinowitsch
+rational elimination, hours of CPU each); they are published in
+`data/cubic_holdouts.json` as a benchmark family for function-field
+Gröbner computation in characteristic 2. All 20 have a size-2 rational
+fiber over F₄, which no étale degree-3 cover admits (fibers carry 0, 1,
+or 3 rational points), so none is a degree-3 counterexample; odd
+degrees ≥ 5 are not excluded by censuses alone.
 
 ## Methodological findings
 

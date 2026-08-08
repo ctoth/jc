@@ -27,7 +27,8 @@ maps with quadratic higher part in dimension $3$ and all $16{,}384$
 plane maps of degree $\le 3$ --- every map with $\det JF = 1$ has
 generic degree $1$ or even, so no counterexample of odd degree exists
 there; a third, $16.7$-million-map cubic-homogeneous stratum agrees on
-all $10{,}115$ of its $10{,}144$ unit-Jacobian maps classified so far.
+$10{,}124$ of its $10{,}144$ unit-Jacobian maps, with the remaining
+$20$ computationally unresolved but census-barred from degree $3$.
 General maps --- the known counterexamples included --- violate the
 pattern. If this parity law holds
 for identity-plus-$H$ form in general, no characteristic-$2$ analogue of
@@ -136,15 +137,23 @@ $F = \mathrm{id} + \bigl(d(y{+}ex)(z{+}fx),\; e(x{+}dy)(z{+}fy),\;
 f(x{+}dz)(y{+}ez)\bigr) + (\text{Frobenius part})$ for
 $(d,e,f) \in \F_2^3$, i.e.\ $8 \times 2^9$.
 
-A third, much larger stratum is nearly complete at the time of writing:
+A third, much larger stratum:
 $\det JF = 1$ for cubic-homogeneous $H$ on $\A^3$ forces the three
 graded pieces $e_1 = e_2 = e_3 = 0$ separately; the $e_1$-kernel
 contains $16{,}777{,}216$ maps, of which $10{,}144$ have unit Jacobian,
-and $10{,}115$ of these are exactly classified so far with degrees
-$1$ ($400$), $2$ ($2184$), $4$ ($3696$), $6$ ($3166$), $10$ ($669$) ---
-again no odd degree $\ge 3$; the remaining $29$ are maps whose
-function-field Gr\"obner bases are computationally hard and are being
-finished with escalating order and elimination methods. Among the maps
+and $10{,}124$ of these are exactly classified with degrees
+$1$ ($400$), $2$ ($2184$), $4$ ($3696$), $6$ ($3172$), $10$ ($672$) ---
+again no odd degree $\ge 3$. The remaining $20$ maps have
+function-field Gr\"obner bases that resisted every method we tried
+(all generator and monomial orders, monic-linear substitution,
+and Rabinowitsch-saturated rational elimination, each given hours of
+CPU time); we document them in the repository \cite{repo} as a
+benchmark family for function-field Gr\"obner computation in
+characteristic $2$. Every one of the $20$ has a rational fiber of size
+exactly $2$ over $\F_4$, which no \'etale cover of degree $3$ admits
+(its fibers carry $0$, $1$, or $3$ rational points), so none can be a
+degree-$3$ counterexample; higher odd degrees are not excluded by
+censuses alone. Among the maps
 that initially resisted every generator order, the simplest, which we single out as a
 benchmark instance and call \emph{the holdout map},
 \[
@@ -161,10 +170,10 @@ under $(y,z,x)$ in under $15$ minutes, and, far more cheaply, by
 observing that $F_1 - A$ is monic linear in $x$, substituting
 $x = A + y^3$, and working with the resulting two-variable system ---
 elimination a structure-aware solver performs automatically and a
-generic Gr\"obner pipeline does not. We offer the map, and its harder
-siblings in the stratum, as stress instances for function-field
-Gr\"obner computation in characteristic $2$. The final
-histogram will appear in the repository \cite{repo} and a revision.
+generic Gr\"obner pipeline does not. We offer the map, and its $20$
+unresolved harder siblings, as stress instances for function-field
+Gr\"obner computation in characteristic $2$; the full classification
+data lives in the repository \cite{repo}.
 
 \begin{quote}
 \textbf{Question (parity).} Does every map of identity-plus-$H$ form
